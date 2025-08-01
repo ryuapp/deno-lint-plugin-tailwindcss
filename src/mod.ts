@@ -30,6 +30,19 @@ function analyzeClassString(value: string): ClassAnalysisResult {
   };
 }
 
+function hasExtraWhitespace(value: string): boolean {
+  // Check for leading/trailing whitespace
+  if (value !== value.trim()) return true;
+
+  // Check for multiple consecutive spaces
+  if (value.includes("  ")) return true;
+
+  // Check for tabs or other whitespace characters
+  if (/[\t\n\r\f\v]/.test(value)) return true;
+
+  return false;
+}
+
 function isClassesSorted(classes: string[]): boolean {
   const sorted = sortClasses([...classes]);
 
@@ -59,6 +72,31 @@ const plugin: Deno.lint.Plugin = {
   rules: {
     "sort-classes": {
       create(context) {
+        function reportExtraWhitespace(
+          node: DenoLintNode,
+          value: string,
+          attributeName: string,
+        ) {
+          if (hasExtraWhitespace(value)) {
+            const cleanedValue = value.trim().replace(/\s+/g, " ");
+
+            context.report({
+              node,
+              message:
+                `TailwindCSS classes in ${attributeName} contain extra whitespace`,
+              hint: `Remove extra whitespace to get: "${cleanedValue}"`,
+              fix(fixer) {
+                if (node.type === "Literal") {
+                  return fixer.replaceText(node, `"${cleanedValue}"`);
+                } else if (node.type === "TemplateElement") {
+                  return fixer.replaceText(node, cleanedValue);
+                }
+                return [];
+              },
+            });
+          }
+        }
+
         function reportUnsortedClasses(
           node: DenoLintNode,
           analysis: ClassAnalysisResult,
@@ -100,6 +138,7 @@ const plugin: Deno.lint.Plugin = {
               const analysis = extractClassesFromLiteral(value);
 
               if (analysis) {
+                reportExtraWhitespace(value, analysis.originalText, attrName);
                 reportUnsortedClasses(value, analysis, attrName);
               }
             } else if (value.type === "JSXExpressionContainer") {
@@ -109,6 +148,11 @@ const plugin: Deno.lint.Plugin = {
                 for (const element of expression.quasis || []) {
                   const analysis = extractClassesFromTemplateElement(element);
                   if (analysis) {
+                    reportExtraWhitespace(
+                      element,
+                      analysis.originalText,
+                      attrName,
+                    );
                     reportUnsortedClasses(element, analysis, attrName);
                   }
                 }
@@ -128,6 +172,11 @@ const plugin: Deno.lint.Plugin = {
               if (arg.type === "Literal") {
                 const analysis = extractClassesFromLiteral(arg);
                 if (analysis) {
+                  reportExtraWhitespace(
+                    arg,
+                    analysis.originalText,
+                    `${functionName}() argument`,
+                  );
                   reportUnsortedClasses(
                     arg,
                     analysis,
@@ -138,6 +187,11 @@ const plugin: Deno.lint.Plugin = {
                 for (const element of arg.quasis || []) {
                   const analysis = extractClassesFromTemplateElement(element);
                   if (analysis) {
+                    reportExtraWhitespace(
+                      element,
+                      analysis.originalText,
+                      `${functionName}() template`,
+                    );
                     reportUnsortedClasses(
                       element,
                       analysis,
@@ -151,6 +205,11 @@ const plugin: Deno.lint.Plugin = {
                   if (prop.type === "Property" && prop.key.type === "Literal") {
                     const analysis = extractClassesFromLiteral(prop.key);
                     if (analysis) {
+                      reportExtraWhitespace(
+                        prop.key,
+                        analysis.originalText,
+                        `${functionName}() object key`,
+                      );
                       reportUnsortedClasses(
                         prop.key,
                         analysis,
@@ -172,6 +231,13 @@ const plugin: Deno.lint.Plugin = {
                     element?.type === "Literal" &&
                     typeof element.value === "string"
                   ) {
+                    // Check for extra whitespace in each element
+                    reportExtraWhitespace(
+                      element,
+                      element.value,
+                      `${functionName}() array element`,
+                    );
+
                     const classes = extractClassesFromString(element.value);
                     allClasses.push(...classes);
                     literalElements.push({
@@ -219,6 +285,11 @@ const plugin: Deno.lint.Plugin = {
               ) {
                 const analysis = extractClassesFromLiteral(init);
                 if (analysis) {
+                  reportExtraWhitespace(
+                    init,
+                    analysis.originalText,
+                    `variable ${id.name}`,
+                  );
                   reportUnsortedClasses(init, analysis, `variable ${id.name}`);
                 }
               }
@@ -232,6 +303,11 @@ const plugin: Deno.lint.Plugin = {
                 for (const element of init.quasis || []) {
                   const analysis = extractClassesFromTemplateElement(element);
                   if (analysis) {
+                    reportExtraWhitespace(
+                      element,
+                      analysis.originalText,
+                      `variable ${id.name} template`,
+                    );
                     reportUnsortedClasses(
                       element,
                       analysis,
