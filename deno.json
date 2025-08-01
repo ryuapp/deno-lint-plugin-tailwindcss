@@ -13,8 +13,13 @@
   "imports": {
     "@std/assert": "jsr:@std/assert@1"
   },
+  "tasks": {
+    "test": "deno test -R",
+    "test:coverage": "deno test -R --coverage"
+  },
   "lint": {
-    "plugins": ["./src/mod.ts"]
+    "plugins": ["./src/mod.ts"],
+    "exclude": ["tests/testdata"]
   },
   "fmt": {
     "proseWrap": "preserve"

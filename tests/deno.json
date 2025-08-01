@@ -1,0 +1,9 @@
+{
+  "name": "@ryu/deno-lint-plugin-tailwindcss-test",
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1"
+  },
+  "lint": {
+    "plugins": ["../src/mod.ts"]
+  }
+}

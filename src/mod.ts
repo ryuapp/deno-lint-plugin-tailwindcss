@@ -1,54 +1,17 @@
 import { sortClasses } from "./sort_classes.ts";
-
-interface ClassAnalysisResult {
-  classes: string[];
-  startIndex: number;
-  endIndex: number;
-  originalText: string;
-}
+import {
+  analyzeClassString,
+  type ClassAnalysisResult,
+  extractClassesFromString,
+  hasExtraWhitespace,
+  isClassesSorted,
+} from "./utils.ts";
 
 type DenoLintNode =
   | Deno.lint.JSXElement
   | Deno.lint.Literal
   | Deno.lint.JSXExpressionContainer
   | Deno.lint.TemplateElement;
-
-function extractClassesFromString(value: string): string[] {
-  return value
-    .split(/\s+/)
-    .map((cls) => cls.trim())
-    .filter((cls) => cls.length > 0);
-}
-
-function analyzeClassString(value: string): ClassAnalysisResult {
-  const classes = extractClassesFromString(value);
-  return {
-    classes,
-    startIndex: 0,
-    endIndex: value.length,
-    originalText: value,
-  };
-}
-
-function hasExtraWhitespace(value: string): boolean {
-  // Check for leading/trailing whitespace
-  if (value !== value.trim()) return true;
-
-  // Check for multiple consecutive spaces
-  if (value.includes("  ")) return true;
-
-  // Check for tabs or other whitespace characters
-  if (/[\t\n\r\f\v]/.test(value)) return true;
-
-  return false;
-}
-
-function isClassesSorted(classes: string[]): boolean {
-  const sorted = sortClasses([...classes]);
-
-  return classes.length === sorted.length &&
-    classes.every((cls, index) => cls === sorted[index]);
-}
 
 function extractClassesFromLiteral(
   node: Deno.lint.Literal,

@@ -1,0 +1,45 @@
+import { sortClasses } from "./sort_classes.ts";
+
+export interface ClassAnalysisResult {
+  classes: string[];
+  startIndex: number;
+  endIndex: number;
+  originalText: string;
+}
+
+export function extractClassesFromString(value: string): string[] {
+  return value
+    .split(/\s+/)
+    .map((cls) => cls.trim())
+    .filter((cls) => cls.length > 0);
+}
+
+export function analyzeClassString(value: string): ClassAnalysisResult {
+  const classes = extractClassesFromString(value);
+  return {
+    classes,
+    startIndex: 0,
+    endIndex: value.length,
+    originalText: value,
+  };
+}
+
+export function hasExtraWhitespace(value: string): boolean {
+  // Check for leading/trailing whitespace
+  if (value !== value.trim()) return true;
+
+  // Check for multiple consecutive spaces
+  if (value.includes("  ")) return true;
+
+  // Check for tabs or other whitespace characters
+  if (/[\t\n\r\f\v]/.test(value)) return true;
+
+  return false;
+}
+
+export function isClassesSorted(classes: string[]): boolean {
+  const sorted = sortClasses([...classes]);
+
+  return classes.length === sorted.length &&
+    classes.every((cls, index) => cls === sorted[index]);
+}
