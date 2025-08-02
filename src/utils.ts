@@ -31,11 +31,20 @@ export function hasExtraWhitespace(
   // Check for multiple consecutive spaces (always bad)
   if (value.includes("  ")) return true;
 
-  // Check for tabs or other whitespace characters (always bad)
-  if (/[\t\n\r\f\v]/.test(value)) return true;
+  if (preserveSpacing) {
+    // For template literals with expressions, be more careful about whitespace
+    // Allow single newlines and tabs if they're part of formatting
+    // But still catch genuinely problematic whitespace
 
-  // For template literals with expressions, allow necessary leading/trailing spaces
-  if (!preserveSpacing) {
+    // Check for multiple consecutive non-space whitespace characters
+    if (/[\t\n\r\f\v]{2,}/.test(value)) return true;
+
+    // Check for mixed space and newline/tab combinations that are likely formatting errors
+    if (/[ \t]+\n|\n[ \t]+/.test(value)) return true;
+  } else {
+    // Check for tabs or other whitespace characters (always bad for regular literals)
+    if (/[\t\n\r\f\v]/.test(value)) return true;
+
     // Check for leading/trailing whitespace only for regular literals
     if (value !== value.trim()) return true;
   }
