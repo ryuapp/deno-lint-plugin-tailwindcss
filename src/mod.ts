@@ -147,6 +147,11 @@ const plugin: Deno.lint.Plugin = {
                   );
                 }
               } else if (arg.type === "TemplateLiteral") {
+                // Only check template literals without expressions (pure string templates)
+                if (arg.expressions && arg.expressions.length > 0) {
+                  // Skip template literals with embedded expressions
+                  continue;
+                }
                 for (const element of arg.quasis || []) {
                   const analysis = extractClassesFromTemplateElement(element);
                   if (analysis) {
@@ -263,6 +268,11 @@ const plugin: Deno.lint.Plugin = {
                 (id.name.toLowerCase().includes("class") ||
                   id.name.toLowerCase().includes("style"))
               ) {
+                // Only check template literals without expressions (pure string templates)
+                if (init.expressions && init.expressions.length > 0) {
+                  // Skip template literals with embedded expressions
+                  return;
+                }
                 for (const element of init.quasis || []) {
                   const analysis = extractClassesFromTemplateElement(element);
                   if (analysis) {

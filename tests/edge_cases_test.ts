@@ -54,7 +54,7 @@ Deno.test("CallExpression with unknown arg type", async () => {
     "clsx-unknown-arg.tsx",
   );
   // Should not crash with unknown argument type
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Array with only literal elements (sorted)", async () => {
@@ -118,13 +118,13 @@ Deno.test("Template element with fix", async () => {
 Deno.test("Property not Property type", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "clsx-spread.tsx");
   // Should not crash with spread properties
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Array element not Literal type", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "array-dynamic.tsx");
   // Should not crash with non-literal array elements
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Single class in array - no sort error", async () => {
@@ -171,7 +171,7 @@ Deno.test("JSX template literal with variables", async () => {
     "jsx-template-quasis.tsx",
   );
   // Should handle template literals with variables
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length >= 1, true);
 });
 
 Deno.test("clsx object with property", async () => {
@@ -204,7 +204,7 @@ Deno.test("Variable with template literal containing variables", async () => {
     "var-template-class.tsx",
   );
   // Should handle template literals with variables in class-named variables
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Fix returns empty array for edge case", async () => {
@@ -225,7 +225,7 @@ Deno.test("Sort classes exact pattern match", async () => {
     "sort-classes-exact-match.tsx",
   );
   // Should handle exact pattern matches in sort_classes.ts
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Fix returns empty array for literal edge case", async () => {
@@ -258,7 +258,7 @@ Deno.test("JSX template literal with quasis loop", async () => {
     "jsx-template-with-quasis.tsx",
   );
   // Should handle template literals with quasis loop
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length >= 1, true);
 });
 
 Deno.test("Call expression with no arguments", async () => {
@@ -267,7 +267,7 @@ Deno.test("Call expression with no arguments", async () => {
     "call-no-arguments.tsx",
   );
   // Should handle call expressions with no arguments
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Object expression with no properties", async () => {
@@ -276,7 +276,7 @@ Deno.test("Object expression with no properties", async () => {
     "object-no-properties.tsx",
   );
   // Should handle object expressions with no properties
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Array expression with no elements", async () => {
@@ -285,7 +285,7 @@ Deno.test("Array expression with no elements", async () => {
     "array-no-elements.tsx",
   );
   // Should handle array expressions with no elements
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Variable template literal with quasis", async () => {
@@ -294,7 +294,7 @@ Deno.test("Variable template literal with quasis", async () => {
     "var-template-with-quasis.tsx",
   );
   // Should handle variable template literals with quasis loop
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("JSX expression container with non-template literal", async () => {
@@ -303,7 +303,7 @@ Deno.test("JSX expression container with non-template literal", async () => {
     "jsx-expression-container.tsx",
   );
   // Should handle JSX expression containers that are not template literals
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Non-string literal value", async () => {
@@ -312,7 +312,7 @@ Deno.test("Non-string literal value", async () => {
     "non-string-literal-value.tsx",
   );
   // Should handle non-string literal values (like numbers)
-  assertEquals(diagnostics.length >= 0, true);
+  assertEquals(diagnostics.length === 0, true);
 });
 
 Deno.test("Object key with whitespace fix fallback", async () => {
