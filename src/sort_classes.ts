@@ -27,18 +27,18 @@ function parseClassName(className: string): [string | null, string] {
   // Find the last colon that's not inside square brackets
   let colonIndex = -1;
   let insideBrackets = false;
-  
+
   for (let i = className.length - 1; i >= 0; i--) {
-    if (className[i] === ']') {
+    if (className[i] === "]") {
       insideBrackets = true;
-    } else if (className[i] === '[') {
+    } else if (className[i] === "[") {
       insideBrackets = false;
-    } else if (className[i] === ':' && !insideBrackets) {
+    } else if (className[i] === ":" && !insideBrackets) {
       colonIndex = i;
       break;
     }
   }
-  
+
   if (colonIndex === -1) {
     return [null, className];
   }
@@ -72,12 +72,12 @@ export function sortClasses(classes: string[]): string[] {
   return classes.sort((a, b) => {
     const orderA = getClassOrder(a);
     const orderB = getClassOrder(b);
-    
+
     // If both are custom classes (order = -1), sort them alphabetically
     if (orderA === -1 && orderB === -1) {
       return a.localeCompare(b);
     }
-    
+
     return orderA - orderB;
   });
 }
