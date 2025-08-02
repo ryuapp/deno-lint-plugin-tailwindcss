@@ -39,9 +39,40 @@ const plugin: Deno.lint.Plugin = {
           node: DenoLintNode,
           value: string,
           attributeName: string,
+          isTemplateQuasi = false,
+          templateInfo?: {
+            hasNextExpression: boolean;
+            hasPrevExpression: boolean;
+          },
         ) {
-          if (hasExtraWhitespace(value)) {
-            const cleanedValue = value.trim().replace(/\s+/g, " ");
+          const shouldPreserveSpacing = isTemplateQuasi && templateInfo &&
+            (templateInfo.hasNextExpression || templateInfo.hasPrevExpression);
+
+          if (hasExtraWhitespace(value, shouldPreserveSpacing)) {
+            let cleanedValue: string;
+
+            if (isTemplateQuasi && templateInfo) {
+              // For template literal quasis, preserve necessary trailing/leading spaces
+              // that might be needed for proper spacing with expressions
+              cleanedValue = value.replace(/\s+/g, " ");
+
+              // Preserve leading space if there's a previous expression and this quasi starts with space
+              const shouldPreserveLeading = templateInfo.hasPrevExpression &&
+                value.startsWith(" ");
+              // Preserve trailing space if there's a next expression and this quasi ends with space
+              const shouldPreserveTrailing = templateInfo.hasNextExpression &&
+                value.endsWith(" ");
+
+              if (!shouldPreserveLeading && !shouldPreserveTrailing) {
+                cleanedValue = cleanedValue.trim();
+              } else if (!shouldPreserveLeading) {
+                cleanedValue = cleanedValue.trimStart();
+              } else if (!shouldPreserveTrailing) {
+                cleanedValue = cleanedValue.trimEnd();
+              }
+            } else {
+              cleanedValue = value.trim().replace(/\s+/g, " ");
+            }
 
             context.report({
               node,
@@ -108,13 +139,23 @@ const plugin: Deno.lint.Plugin = {
               const expression = value.expression;
 
               if (expression.type === "TemplateLiteral") {
-                for (const element of expression.quasis || []) {
+                // Process template literals with expressions by handling each quasi
+                const quasis = expression.quasis || [];
+                for (let i = 0; i < quasis.length; i++) {
+                  const element = quasis[i];
                   const analysis = extractClassesFromTemplateElement(element);
-                  if (analysis) {
+                  if (analysis && analysis.classes.length > 0) {
+                    const templateInfo = {
+                      hasPrevExpression: i > 0,
+                      hasNextExpression: i < quasis.length - 1 &&
+                        (expression.expressions?.length || 0) > i,
+                    };
                     reportExtraWhitespace(
                       element,
                       analysis.originalText,
                       attrName,
+                      true,
+                      templateInfo,
                     );
                     reportUnsortedClasses(element, analysis, attrName);
                   }
@@ -147,18 +188,23 @@ const plugin: Deno.lint.Plugin = {
                   );
                 }
               } else if (arg.type === "TemplateLiteral") {
-                // Only check template literals without expressions (pure string templates)
-                if (arg.expressions && arg.expressions.length > 0) {
-                  // Skip template literals with embedded expressions
-                  continue;
-                }
-                for (const element of arg.quasis || []) {
+                // Process template literals with expressions by handling each quasi
+                const quasis = arg.quasis || [];
+                for (let i = 0; i < quasis.length; i++) {
+                  const element = quasis[i];
                   const analysis = extractClassesFromTemplateElement(element);
-                  if (analysis) {
+                  if (analysis && analysis.classes.length > 0) {
+                    const templateInfo = {
+                      hasPrevExpression: i > 0,
+                      hasNextExpression: i < quasis.length - 1 &&
+                        (arg.expressions?.length || 0) > i,
+                    };
                     reportExtraWhitespace(
                       element,
                       analysis.originalText,
                       `${functionName}() template`,
+                      true,
+                      templateInfo,
                     );
                     reportUnsortedClasses(
                       element,
@@ -268,18 +314,23 @@ const plugin: Deno.lint.Plugin = {
                 (id.name.toLowerCase().includes("class") ||
                   id.name.toLowerCase().includes("style"))
               ) {
-                // Only check template literals without expressions (pure string templates)
-                if (init.expressions && init.expressions.length > 0) {
-                  // Skip template literals with embedded expressions
-                  return;
-                }
-                for (const element of init.quasis || []) {
+                // Process template literals with expressions by handling each quasi
+                const quasis = init.quasis || [];
+                for (let i = 0; i < quasis.length; i++) {
+                  const element = quasis[i];
                   const analysis = extractClassesFromTemplateElement(element);
-                  if (analysis) {
+                  if (analysis && analysis.classes.length > 0) {
+                    const templateInfo = {
+                      hasPrevExpression: i > 0,
+                      hasNextExpression: i < quasis.length - 1 &&
+                        (init.expressions?.length || 0) > i,
+                    };
                     reportExtraWhitespace(
                       element,
                       analysis.originalText,
                       `variable ${id.name} template`,
+                      true,
+                      templateInfo,
                     );
                     reportUnsortedClasses(
                       element,

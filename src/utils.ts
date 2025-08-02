@@ -24,15 +24,21 @@ export function analyzeClassString(value: string): ClassAnalysisResult {
   };
 }
 
-export function hasExtraWhitespace(value: string): boolean {
-  // Check for leading/trailing whitespace
-  if (value !== value.trim()) return true;
-
-  // Check for multiple consecutive spaces
+export function hasExtraWhitespace(
+  value: string,
+  preserveSpacing = false,
+): boolean {
+  // Check for multiple consecutive spaces (always bad)
   if (value.includes("  ")) return true;
 
-  // Check for tabs or other whitespace characters
+  // Check for tabs or other whitespace characters (always bad)
   if (/[\t\n\r\f\v]/.test(value)) return true;
+
+  // For template literals with expressions, allow necessary leading/trailing spaces
+  if (!preserveSpacing) {
+    // Check for leading/trailing whitespace only for regular literals
+    if (value !== value.trim()) return true;
+  }
 
   return false;
 }
