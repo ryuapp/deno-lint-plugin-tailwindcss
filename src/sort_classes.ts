@@ -24,27 +24,32 @@ export function getClassOrder(className: string): number {
 }
 
 function parseClassName(className: string): [string | null, string] {
+  // Handle ! prefix for important modifiers - strip it for parsing
+  const workingClassName = className.startsWith("!")
+    ? className.slice(1)
+    : className;
+
   // Find the last colon that's not inside square brackets
   let colonIndex = -1;
   let insideBrackets = false;
 
-  for (let i = className.length - 1; i >= 0; i--) {
-    if (className[i] === "]") {
+  for (let i = workingClassName.length - 1; i >= 0; i--) {
+    if (workingClassName[i] === "]") {
       insideBrackets = true;
-    } else if (className[i] === "[") {
+    } else if (workingClassName[i] === "[") {
       insideBrackets = false;
-    } else if (className[i] === ":" && !insideBrackets) {
+    } else if (workingClassName[i] === ":" && !insideBrackets) {
       colonIndex = i;
       break;
     }
   }
 
   if (colonIndex === -1) {
-    return [null, className];
+    return [null, workingClassName];
   }
 
-  const variant = className.substring(0, colonIndex);
-  const utility = className.substring(colonIndex + 1);
+  const variant = workingClassName.substring(0, colonIndex);
+  const utility = workingClassName.substring(colonIndex + 1);
   return [variant, utility];
 }
 
@@ -75,7 +80,10 @@ export function sortClasses(classes: string[]): string[] {
 
     // If both are custom classes (order = -1), sort them alphabetically
     if (orderA === -1 && orderB === -1) {
-      return a.localeCompare(b);
+      // For alphabetical sorting, strip the ! prefix for comparison but preserve in output
+      const aForComparison = a.startsWith("!") ? a.slice(1) : a;
+      const bForComparison = b.startsWith("!") ? b.slice(1) : b;
+      return aForComparison.localeCompare(bForComparison);
     }
 
     return orderA - orderB;

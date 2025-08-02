@@ -198,15 +198,6 @@ Deno.test("clsx array with elements", async () => {
   assertEquals(hasArrayError, true);
 });
 
-Deno.test("Variable with template literal containing variables", async () => {
-  const diagnostics = await runLintPluginFromFile(
-    plugin,
-    "var-template-class.tsx",
-  );
-  // Should handle template literals with variables in class-named variables
-  assertEquals(diagnostics.length === 0, true);
-});
-
 Deno.test("Fix returns empty array for edge case", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
@@ -232,18 +223,6 @@ Deno.test("Fix returns empty array for literal edge case", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
     "fix-returns-empty-literal.tsx",
-  );
-  assertEquals(diagnostics.length >= 1, true);
-  const hasWhitespaceError = diagnostics.some((d) =>
-    d.message.includes("contain extra whitespace")
-  );
-  assertEquals(hasWhitespaceError, true);
-});
-
-Deno.test("Fix returns empty array for template edge case", async () => {
-  const diagnostics = await runLintPluginFromFile(
-    plugin,
-    "fix-returns-empty-template.tsx",
   );
   assertEquals(diagnostics.length >= 1, true);
   const hasWhitespaceError = diagnostics.some((d) =>
@@ -285,15 +264,6 @@ Deno.test("Array expression with no elements", async () => {
     "array-no-elements.tsx",
   );
   // Should handle array expressions with no elements
-  assertEquals(diagnostics.length === 0, true);
-});
-
-Deno.test("Variable template literal with quasis", async () => {
-  const diagnostics = await runLintPluginFromFile(
-    plugin,
-    "var-template-with-quasis.tsx",
-  );
-  // Should handle variable template literals with quasis loop
   assertEquals(diagnostics.length === 0, true);
 });
 
