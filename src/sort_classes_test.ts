@@ -115,9 +115,9 @@ Deno.test("sortClasses - complex variants", () => {
   const expected = [
     "flex",
     "peer-focus:bg-blue-500",
-    "group-hover:text-white",
     "dark:hover:text-gray-300",
     "lg:group-hover:text-red-500",
+    "group-hover:text-white",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -149,9 +149,9 @@ Deno.test("sortClasses - modifier variants", () => {
   ];
   const expected = [
     "flex",
-    "active:text-red-500",
-    "hover:focus:text-white",
     "focus:hover:bg-blue-500",
+    "hover:focus:text-white",
+    "active:text-red-500",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -201,8 +201,8 @@ Deno.test("sortClasses - mixed complex cases", () => {
   ];
   const expected = [
     "flex",
-    "xl:group-hover:data-[state=open]:text-white",
     "sm:peer-focus:bg-blue-500",
+    "xl:group-hover:data-[state=open]:text-white",
     "lg:hover:text-gray-300",
     "md:dark:text-white",
   ];
@@ -309,9 +309,9 @@ Deno.test("sortClasses - custom CSS properties", () => {
   ];
   const expected = [
     "flex",
+    "bg-[length:200px_100px]",
     "p-[calc(100%-20px)]",
     "text-[color:var(--custom-color)]",
-    "bg-[length:200px_100px]",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -326,11 +326,11 @@ Deno.test("sortClasses - container and prose", () => {
     "max-w-4xl",
   ];
   const expected = [
+    "prose",
+    "prose-lg",
     "container",
     "mx-auto",
     "max-w-4xl",
-    "prose-lg",
-    "prose",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);

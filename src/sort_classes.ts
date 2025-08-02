@@ -19,11 +19,26 @@ export function getClassOrder(className: string): number {
     }
   }
 
-  return 999999;
+  // Non-Tailwind classes should come first, so give them a negative order
+  return -1;
 }
 
 function parseClassName(className: string): [string | null, string] {
-  const colonIndex = className.indexOf(":");
+  // Find the last colon that's not inside square brackets
+  let colonIndex = -1;
+  let insideBrackets = false;
+  
+  for (let i = className.length - 1; i >= 0; i--) {
+    if (className[i] === ']') {
+      insideBrackets = true;
+    } else if (className[i] === '[') {
+      insideBrackets = false;
+    } else if (className[i] === ':' && !insideBrackets) {
+      colonIndex = i;
+      break;
+    }
+  }
+  
   if (colonIndex === -1) {
     return [null, className];
   }
@@ -39,12 +54,30 @@ function matchesPattern(className: string, pattern: string): boolean {
   }
 
   if (pattern.endsWith("-")) {
-    return className.startsWith(pattern);
+    // Check if it's a regular pattern match or an arbitrary value with brackets
+    if (className.startsWith(pattern)) {
+      return true;
+    }
+    // Check for arbitrary values like text-[color:var(--custom)]
+    const arbitraryPattern = pattern.slice(0, -1) + "[";
+    if (className.startsWith(arbitraryPattern) && className.endsWith("]")) {
+      return true;
+    }
   }
 
   return className === pattern;
 }
 
 export function sortClasses(classes: string[]): string[] {
-  return classes.sort((a, b) => getClassOrder(a) - getClassOrder(b));
+  return classes.sort((a, b) => {
+    const orderA = getClassOrder(a);
+    const orderB = getClassOrder(b);
+    
+    // If both are custom classes (order = -1), sort them alphabetically
+    if (orderA === -1 && orderB === -1) {
+      return a.localeCompare(b);
+    }
+    
+    return orderA - orderB;
+  });
 }
