@@ -5,16 +5,25 @@ export function getClassOrder(className: string): number {
 
   const variantOrder = variant ? VARIANT_CLASSES.indexOf(variant) : -1;
 
+  // For matching purposes, normalize negative value classes (e.g., -mt-20 -> mt-20)
+  // but keep the original for display
+  const isNegative = utilityClass.startsWith("-");
+  const normalizedUtilityClass = isNegative
+    ? utilityClass.slice(1)
+    : utilityClass;
+
   for (let layerIndex = 0; layerIndex < TAILWIND_LAYERS.length; layerIndex++) {
     const layer = TAILWIND_LAYERS[layerIndex];
 
     for (let classIndex = 0; classIndex < layer.classes.length; classIndex++) {
       const pattern = layer.classes[classIndex];
 
-      if (matchesPattern(utilityClass, pattern)) {
+      if (matchesPattern(normalizedUtilityClass, pattern)) {
         const baseOrder = layerIndex * 10000 + classIndex * 10;
         const variantOffset = variantOrder >= 0 ? variantOrder : 0;
-        return baseOrder + variantOffset;
+        // Add a small offset for negative values to ensure they come first
+        const negativeOffset = isNegative ? -1 : 0;
+        return baseOrder + variantOffset + negativeOffset;
       }
     }
   }
@@ -74,7 +83,10 @@ function matchesPattern(className: string, pattern: string): boolean {
 }
 
 export function sortClasses(classes: string[]): string[] {
-  return classes.sort((a, b) => {
+  // Deduplicate first
+  const uniqueClasses = [...new Set(classes)];
+  
+  return uniqueClasses.sort((a, b) => {
     const orderA = getClassOrder(a);
     const orderB = getClassOrder(b);
 

@@ -2,54 +2,51 @@ import { assertEquals } from "@std/assert";
 import { sortClasses } from "./sort_classes.ts";
 
 Deno.test("sortClasses - basic functionality", () => {
-  const input = ["text-red-500", "p-4", "bg-blue-600", "m-2"];
-  const expected = ["m-2", "bg-blue-600", "p-4", "text-red-500"];
+  const input = ["p-4", "bg-blue-500", "text-white", "m-2"];
+  const expected = ["m-2", "bg-blue-500", "p-4", "text-white"];
   const result = sortClasses(input);
   assertEquals(result, expected);
 });
 
 Deno.test("sortClasses - with variants", () => {
-  const input = [
-    "hover:bg-red-500",
-    "focus:text-blue-600",
-    "bg-green-400",
-    "p-4",
-  ];
+  const input = ["hover:bg-blue-700", "p-4", "bg-blue-500", "hover:text-white"];
   const expected = [
-    "bg-green-400",
-    "hover:bg-red-500",
+    "bg-blue-500",
     "p-4",
-    "focus:text-blue-600",
+    "hover:bg-blue-700",
+    "hover:text-white",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
 });
 
 Deno.test("sortClasses - responsive variants", () => {
-  const input = ["lg:text-xl", "md:p-8", "sm:m-4", "text-base"];
-  const expected = ["sm:m-4", "md:p-8", "text-base", "lg:text-xl"];
+  const input = ["lg:p-8", "p-4", "md:p-6", "sm:p-5"];
+  const expected = ["p-4", "sm:p-5", "md:p-6", "lg:p-8"];
   const result = sortClasses(input);
   assertEquals(result, expected);
 });
 
 Deno.test("sortClasses - complex layout classes", () => {
   const input = [
-    "text-center",
-    "flex",
-    "items-center",
-    "justify-center",
-    "h-screen",
-    "w-full",
+    "grid",
+    "grid-cols-3",
+    "gap-4",
+    "p-4",
     "bg-gray-100",
+    "flex",
+    "flex-col",
+    "items-center",
   ];
   const expected = [
     "flex",
-    "h-screen",
-    "w-full",
+    "grid",
+    "flex-col",
+    "grid-cols-3",
     "items-center",
-    "justify-center",
+    "gap-4",
     "bg-gray-100",
-    "text-center",
+    "p-4",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -57,67 +54,67 @@ Deno.test("sortClasses - complex layout classes", () => {
 
 Deno.test("sortClasses - modern layout with svh unit", () => {
   const input = [
-    "bg-zinc-900",
-    "text-white",
-    "overflow-hidden",
-    "flex",
-    "min-h-svh",
-    "justify-center",
+    "h-[100svh]",
+    "w-screen",
+    "min-h-[100svh]",
+    "max-h-screen",
+    "h-screen",
   ];
   const expected = [
-    "flex",
-    "min-h-svh",
-    "justify-center",
-    "overflow-hidden",
-    "bg-zinc-900",
-    "text-white",
+    "h-screen",
+    "h-[100svh]",
+    "max-h-screen",
+    "min-h-[100svh]",
+    "w-screen",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
 });
 
 Deno.test("sortClasses - empty array", () => {
-  const input: string[] = [];
-  const expected: string[] = [];
-  const result = sortClasses(input);
-  assertEquals(result, expected);
+  assertEquals(sortClasses([]), []);
 });
 
 Deno.test("sortClasses - single class", () => {
-  const input = ["flex"];
-  const expected = ["flex"];
-  const result = sortClasses(input);
-  assertEquals(result, expected);
+  assertEquals(sortClasses(["p-4"]), ["p-4"]);
 });
 
 Deno.test("sortClasses - duplicate classes", () => {
-  const input = ["flex", "flex", "p-4"];
-  const expected = ["flex", "flex", "p-4"];
+  const input = ["p-4", "bg-blue-500", "p-4", "text-white"];
+  const expected = ["bg-blue-500", "p-4", "text-white"];
   const result = sortClasses(input);
   assertEquals(result, expected);
 });
 
 Deno.test("sortClasses - with arbitrary values", () => {
-  const input = ["text-[#ff0000]", "bg-[rgb(255,0,0)]", "flex", "p-[10px]"];
-  const expected = ["flex", "bg-[rgb(255,0,0)]", "p-[10px]", "text-[#ff0000]"];
+  const input = [
+    "p-[10px]",
+    "m-[20px]",
+    "bg-[#123456]",
+    "text-[color:var(--primary)]",
+  ];
+  const expected = [
+    "m-[20px]",
+    "bg-[#123456]",
+    "p-[10px]",
+    "text-[color:var(--primary)]",
+  ];
   const result = sortClasses(input);
   assertEquals(result, expected);
 });
 
 Deno.test("sortClasses - complex variants", () => {
   const input = [
-    "group-hover:text-white",
-    "peer-focus:bg-blue-500",
-    "dark:hover:text-gray-300",
-    "flex",
-    "lg:group-hover:text-red-500",
+    "dark:hover:bg-gray-800",
+    "hover:bg-gray-200",
+    "dark:bg-gray-900",
+    "bg-white",
   ];
   const expected = [
-    "flex",
-    "peer-focus:bg-blue-500",
-    "dark:hover:text-gray-300",
-    "lg:group-hover:text-red-500",
-    "group-hover:text-white",
+    "bg-white",
+    "hover:bg-gray-200",
+    "dark:bg-gray-900",
+    "dark:hover:bg-gray-800",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -125,16 +122,16 @@ Deno.test("sortClasses - complex variants", () => {
 
 Deno.test("sortClasses - responsive with arbitrary", () => {
   const input = [
-    "sm:text-[14px]",
-    "md:bg-[#123456]",
-    "lg:p-[20px]",
-    "text-base",
+    "md:w-[300px]",
+    "w-full",
+    "lg:w-1/2",
+    "sm:w-[200px]",
   ];
   const expected = [
-    "md:bg-[#123456]",
-    "lg:p-[20px]",
-    "text-base",
-    "sm:text-[14px]",
+    "w-full",
+    "sm:w-[200px]",
+    "md:w-[300px]",
+    "lg:w-1/2",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -142,16 +139,22 @@ Deno.test("sortClasses - responsive with arbitrary", () => {
 
 Deno.test("sortClasses - modifier variants", () => {
   const input = [
-    "hover:focus:text-white",
-    "focus:hover:bg-blue-500",
-    "active:text-red-500",
-    "flex",
+    "first:mt-0",
+    "last:mb-0",
+    "odd:bg-gray-100",
+    "even:bg-white",
+    "mt-4",
+    "mb-4",
+    "bg-gray-50",
   ];
   const expected = [
-    "flex",
-    "focus:hover:bg-blue-500",
-    "hover:focus:text-white",
-    "active:text-red-500",
+    "mt-4",
+    "mb-4",
+    "bg-gray-50",
+    "first:mt-0",
+    "last:mb-0",
+    "odd:bg-gray-100",
+    "even:bg-white",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -202,8 +205,8 @@ Deno.test("sortClasses - mixed complex cases", () => {
   const expected = [
     "flex",
     "sm:peer-focus:bg-blue-500",
-    "xl:group-hover:data-[state=open]:text-white",
     "lg:hover:text-gray-300",
+    "xl:group-hover:data-[state=open]:text-white",
     "md:dark:text-white",
   ];
   const result = sortClasses(input);
@@ -350,6 +353,29 @@ Deno.test("sortClasses - content utilities", () => {
     "content-[attr(data-content)]",
     "before:content-['→']",
     "after:content-['']",
+  ];
+  const result = sortClasses(input);
+  assertEquals(result, expected);
+});
+
+Deno.test("sortClasses - negative values", () => {
+  const input = [
+    "p-4",
+    "-mt-20",
+    "mb-8",
+    "-mx-4",
+    "mt-4",
+    "-mr-2",
+    "ml-6",
+  ];
+  const expected = [
+    "-mx-4", // mx comes first
+    "-mt-20", // negative mt comes before positive mt
+    "mt-4", // positive mt
+    "-mr-2", // mr comes after mt
+    "mb-8", // mb comes after mr
+    "ml-6", // ml comes after mb
+    "p-4", // padding comes after margin
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);

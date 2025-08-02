@@ -55,6 +55,9 @@ export function hasExtraWhitespace(
 export function isClassesSorted(classes: string[]): boolean {
   const sorted = sortClasses([...classes]);
 
-  return classes.length === sorted.length &&
-    classes.every((cls, index) => cls === sorted[index]);
+  // First deduplicate the input to match what sortClasses does
+  const uniqueClasses = [...new Set(classes)];
+
+  return uniqueClasses.length === sorted.length &&
+    uniqueClasses.every((cls, index) => cls === sorted[index]);
 }
