@@ -31,7 +31,7 @@ function extractClassesFromTemplateElement(
 }
 
 const plugin: Deno.lint.Plugin = {
-  name: "ryu-tailwindcss-plugin",
+  name: "unstable-tailwindcss-plugin",
   rules: {
     "sort-classes": {
       create(context) {
