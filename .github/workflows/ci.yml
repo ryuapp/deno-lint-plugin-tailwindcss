@@ -29,3 +29,6 @@ jobs:
 
       - name: Run Tests
         run: deno task test
+
+      - name: Publish Dry Run
+        run: deno publish --dry-run
