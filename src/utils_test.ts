@@ -170,6 +170,6 @@ Deno.test("isClassesSorted - duplicate classes", () => {
 });
 
 Deno.test("isClassesSorted - with variants", () => {
-  assertEquals(isClassesSorted(["flex", "hover:bg-blue-500", "p-4"]), true);
+  assertEquals(isClassesSorted(["flex", "p-4", "hover:bg-blue-500"]), true);
   assertEquals(isClassesSorted(["hover:bg-blue-500", "flex", "p-4"]), false);
 });

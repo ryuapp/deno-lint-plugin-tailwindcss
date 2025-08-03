@@ -3,7 +3,20 @@ import { TAILWIND_LAYERS, VARIANT_CLASSES } from "./tailwind_preset.ts";
 export function getClassOrder(className: string): number {
   const [variant, utilityClass] = parseClassName(className);
 
-  const variantOrder = variant ? VARIANT_CLASSES.indexOf(variant) : -1;
+  // Calculate variant order - sum all variant parts for complex variants
+  let variantOrder = 0;
+  let hasVariant = false;
+  if (variant) {
+    hasVariant = true;
+    const variantParts = variant.split(":");
+    // Sum all variant indices to ensure complex variants come after simple ones
+    for (const part of variantParts) {
+      const partIndex = VARIANT_CLASSES.indexOf(part);
+      if (partIndex >= 0) {
+        variantOrder += partIndex;
+      }
+    }
+  }
 
   // For matching purposes, normalize negative value classes (e.g., -mt-20 -> mt-20)
   // but keep the original for display
@@ -20,10 +33,13 @@ export function getClassOrder(className: string): number {
 
       if (matchesPattern(normalizedUtilityClass, pattern)) {
         const baseOrder = layerIndex * 10000 + classIndex * 10;
-        const variantOffset = variantOrder >= 0 ? variantOrder : 0;
         // Add a small offset for negative values to ensure they come first
         const negativeOffset = isNegative ? -1 : 0;
-        return baseOrder + variantOffset + negativeOffset;
+        // Variants should come after all base classes
+        const variantOffset = hasVariant ? 100000 + variantOrder : 0;
+        // Arbitrary values (with []) should come after predefined values
+        const arbitraryOffset = normalizedUtilityClass.includes("[") ? 1 : 0;
+        return baseOrder + negativeOffset + variantOffset + arbitraryOffset;
       }
     }
   }
@@ -85,7 +101,7 @@ function matchesPattern(className: string, pattern: string): boolean {
 export function sortClasses(classes: string[]): string[] {
   // Deduplicate first
   const uniqueClasses = [...new Set(classes)];
-  
+
   return uniqueClasses.sort((a, b) => {
     const orderA = getClassOrder(a);
     const orderB = getClassOrder(b);
