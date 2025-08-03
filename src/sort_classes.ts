@@ -32,13 +32,19 @@ export function getClassOrder(className: string): number {
       const pattern = layer.classes[classIndex];
 
       if (matchesPattern(normalizedUtilityClass, pattern)) {
-        const baseOrder = layerIndex * 10000 + classIndex * 10;
+        // Base order calculation
+        const baseOrder = layerIndex * 100000 + classIndex * 100;
+
         // Add a small offset for negative values to ensure they come first
         const negativeOffset = isNegative ? -1 : 0;
-        // Variants should come after all base classes
-        const variantOffset = hasVariant ? 100000 + variantOrder : 0;
+
+        // Base classes (no variants) should come before variant classes
+        // Add variant offset to push variant classes later
+        const variantOffset = hasVariant ? 50000 + variantOrder : 0;
+
         // Arbitrary values (with []) should come after predefined values
         const arbitraryOffset = normalizedUtilityClass.includes("[") ? 1 : 0;
+
         return baseOrder + negativeOffset + variantOffset + arbitraryOffset;
       }
     }
@@ -49,32 +55,37 @@ export function getClassOrder(className: string): number {
 }
 
 function parseClassName(className: string): [string | null, string] {
-  // Handle ! prefix for important modifiers - strip it for parsing
-  const workingClassName = className.startsWith("!")
-    ? className.slice(1)
-    : className;
-
   // Find the last colon that's not inside square brackets
   let colonIndex = -1;
   let insideBrackets = false;
 
-  for (let i = workingClassName.length - 1; i >= 0; i--) {
-    if (workingClassName[i] === "]") {
+  for (let i = className.length - 1; i >= 0; i--) {
+    if (className[i] === "]") {
       insideBrackets = true;
-    } else if (workingClassName[i] === "[") {
+    } else if (className[i] === "[") {
       insideBrackets = false;
-    } else if (workingClassName[i] === ":" && !insideBrackets) {
+    } else if (className[i] === ":" && !insideBrackets) {
       colonIndex = i;
       break;
     }
   }
 
   if (colonIndex === -1) {
+    // No variant, but might have ! prefix
+    const workingClassName = className.startsWith("!")
+      ? className.slice(1)
+      : className;
     return [null, workingClassName];
   }
 
-  const variant = workingClassName.substring(0, colonIndex);
-  const utility = workingClassName.substring(colonIndex + 1);
+  const variant = className.substring(0, colonIndex);
+  let utility = className.substring(colonIndex + 1);
+
+  // Handle ! prefix in utility part for important modifiers
+  if (utility.startsWith("!")) {
+    utility = utility.slice(1);
+  }
+
   return [variant, utility];
 }
 
