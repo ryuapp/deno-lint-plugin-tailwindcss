@@ -11,7 +11,7 @@ export function extractClassesFromString(value: string): string[] {
   return value
     .split(/\s+/)
     .map((cls) => cls.trim())
-    .filter((cls) => cls.length > 0);
+    .filter((cls) => cls.length > 0 && !cls.startsWith("${"));
 }
 
 export function analyzeClassString(value: string): ClassAnalysisResult {

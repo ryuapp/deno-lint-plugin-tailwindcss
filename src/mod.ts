@@ -179,56 +179,72 @@ const plugin: Deno.lint.Plugin = {
               const expression = value.expression;
 
               if (expression.type === "TemplateLiteral") {
-                // Process template literals with expressions by handling each quasi
+                // Skip processing entirely if any quasi contains newlines (multiline template)
                 const quasis = expression.quasis || [];
-                for (let i = 0; i < quasis.length; i++) {
-                  const element = quasis[i];
-                  const analysis = extractClassesFromTemplateElement(element);
-                  // Process quasi if it has classes OR if it has problematic whitespace
-                  if (
-                    analysis &&
-                    (analysis.classes.length > 0 ||
-                      analysis.originalText.trim().length === 0)
-                  ) {
-                    const templateInfo = {
-                      hasPrevExpression: i > 0,
-                      hasNextExpression: i < quasis.length - 1 &&
-                        (expression.expressions?.length || 0) > i,
-                    };
+                const hasNewlines = quasis.some((q) =>
+                  q.cooked && q.cooked.includes("\n")
+                );
+                if (!hasNewlines) {
+                  // Process template literals with expressions by handling each quasi
+                  for (let i = 0; i < quasis.length; i++) {
+                    const element = quasis[i];
+                    const analysis = extractClassesFromTemplateElement(element);
 
-                    // For quasi parts that are only whitespace, always check for problematic patterns
+                    // Process quasi if it has classes OR if it has problematic whitespace
                     if (
-                      analysis.classes.length === 0 &&
-                      analysis.originalText.trim().length === 0
+                      analysis &&
+                      (analysis.classes.length > 0 ||
+                        analysis.originalText.trim().length === 0)
                     ) {
-                      // This is a whitespace-only quasi, check if it has problematic patterns
-                      if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
+                      const templateInfo = {
+                        hasPrevExpression: i > 0,
+                        hasNextExpression: i < quasis.length - 1 &&
+                          (expression.expressions?.length || 0) > i,
+                      };
+
+                      // For quasi parts that are only whitespace, check if we should process them
+                      if (
+                        analysis.classes.length === 0 &&
+                        analysis.originalText.trim().length === 0
+                      ) {
+                        // Don't process whitespace-only quasi parts that are between expressions
+                        // These are likely intentional spacing like in `${x} ${y} ${z}`
+                        if (
+                          templateInfo.hasPrevExpression &&
+                          templateInfo.hasNextExpression
+                        ) {
+                          continue; // Skip processing this whitespace-only quasi
+                        }
+
+                        // This is a whitespace-only quasi, check if it has problematic patterns
+                        if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
+                          reportExtraWhitespace(
+                            element,
+                            analysis.originalText,
+                            attrName,
+                            false, // Don't preserve spacing for whitespace-only parts
+                          );
+                        }
+                      } else {
+                        // Normal processing for quasi parts with actual classes
                         reportExtraWhitespace(
                           element,
                           analysis.originalText,
                           attrName,
-                          false, // Don't preserve spacing for whitespace-only parts
+                          true,
+                          templateInfo,
+                        );
+                        reportUnsortedClasses(
+                          element,
+                          analysis,
+                          attrName,
+                          true,
+                          templateInfo,
                         );
                       }
-                    } else {
-                      // Normal processing for quasi parts with actual classes
-                      reportExtraWhitespace(
-                        element,
-                        analysis.originalText,
-                        attrName,
-                        true,
-                        templateInfo,
-                      );
-                      reportUnsortedClasses(
-                        element,
-                        analysis,
-                        attrName,
-                        true,
-                        templateInfo,
-                      );
                     }
                   }
-                }
+                } // Close if (!hasNewlines)
               }
             }
           },
@@ -257,56 +273,72 @@ const plugin: Deno.lint.Plugin = {
                   );
                 }
               } else if (arg.type === "TemplateLiteral") {
-                // Process template literals with expressions by handling each quasi
+                // Skip processing entirely if any quasi contains newlines (multiline template)
                 const quasis = arg.quasis || [];
-                for (let i = 0; i < quasis.length; i++) {
-                  const element = quasis[i];
-                  const analysis = extractClassesFromTemplateElement(element);
-                  // Process quasi if it has classes OR if it has problematic whitespace
-                  if (
-                    analysis &&
-                    (analysis.classes.length > 0 ||
-                      analysis.originalText.trim().length === 0)
-                  ) {
-                    const templateInfo = {
-                      hasPrevExpression: i > 0,
-                      hasNextExpression: i < quasis.length - 1 &&
-                        (arg.expressions?.length || 0) > i,
-                    };
+                const hasNewlines = quasis.some((q) =>
+                  q.cooked && q.cooked.includes("\n")
+                );
+                if (!hasNewlines) {
+                  // Process template literals with expressions by handling each quasi
+                  for (let i = 0; i < quasis.length; i++) {
+                    const element = quasis[i];
+                    const analysis = extractClassesFromTemplateElement(element);
 
-                    // For quasi parts that are only whitespace, always check for problematic patterns
+                    // Process quasi if it has classes OR if it has problematic whitespace
                     if (
-                      analysis.classes.length === 0 &&
-                      analysis.originalText.trim().length === 0
+                      analysis &&
+                      (analysis.classes.length > 0 ||
+                        analysis.originalText.trim().length === 0)
                     ) {
-                      // This is a whitespace-only quasi, check if it has problematic patterns
-                      if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
+                      const templateInfo = {
+                        hasPrevExpression: i > 0,
+                        hasNextExpression: i < quasis.length - 1 &&
+                          (arg.expressions?.length || 0) > i,
+                      };
+
+                      // For quasi parts that are only whitespace, check if we should process them
+                      if (
+                        analysis.classes.length === 0 &&
+                        analysis.originalText.trim().length === 0
+                      ) {
+                        // Don't process whitespace-only quasi parts that are between expressions
+                        // These are likely intentional spacing like in `${x} ${y} ${z}`
+                        if (
+                          templateInfo.hasPrevExpression &&
+                          templateInfo.hasNextExpression
+                        ) {
+                          continue; // Skip processing this whitespace-only quasi
+                        }
+
+                        // This is a whitespace-only quasi, check if it has problematic patterns
+                        if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
+                          reportExtraWhitespace(
+                            element,
+                            analysis.originalText,
+                            `${functionName}() template`,
+                            false, // Don't preserve spacing for whitespace-only parts
+                          );
+                        }
+                      } else {
+                        // Normal processing for quasi parts with actual classes
                         reportExtraWhitespace(
                           element,
                           analysis.originalText,
                           `${functionName}() template`,
-                          false, // Don't preserve spacing for whitespace-only parts
+                          true,
+                          templateInfo,
+                        );
+                        reportUnsortedClasses(
+                          element,
+                          analysis,
+                          `${functionName}() template`,
+                          true,
+                          templateInfo,
                         );
                       }
-                    } else {
-                      // Normal processing for quasi parts with actual classes
-                      reportExtraWhitespace(
-                        element,
-                        analysis.originalText,
-                        `${functionName}() template`,
-                        true,
-                        templateInfo,
-                      );
-                      reportUnsortedClasses(
-                        element,
-                        analysis,
-                        `${functionName}() template`,
-                        true,
-                        templateInfo,
-                      );
                     }
                   }
-                }
+                } // Close if (!hasNewlines)
               } else if (arg.type === "ObjectExpression") {
                 // Handle object expression like { "opacity-50 cursor-not-allowed": isDisabled }
                 for (const prop of arg.properties || []) {

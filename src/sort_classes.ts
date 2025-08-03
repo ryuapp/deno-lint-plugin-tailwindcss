@@ -18,10 +18,10 @@ export function getClassSortKey(className: string): number[] {
 
       if (matchesPattern(normalizedUtilityClass, pattern)) {
         const sortKey = [];
-        
+
         // 1. Non-Tailwind classes come first (0), Tailwind classes second (1)
         sortKey.push(1);
-        
+
         // 2. Base classes before variant classes
         if (variant) {
           sortKey.push(1); // has variant
@@ -30,23 +30,23 @@ export function getClassSortKey(className: string): number[] {
         } else {
           sortKey.push(0); // no variant
         }
-        
+
         // 3. Layer index (base, components, utilities)
         sortKey.push(layerIndex);
-        
+
         // 4. Class index within layer
         sortKey.push(classIndex);
-        
+
         // 5. Negative values come first
         sortKey.push(isNegative ? 0 : 1);
-        
+
         // 6. Important modifier comes last (! prefix)
         const hasImportant = className.includes("!");
         sortKey.push(hasImportant ? 1 : 0);
-        
+
         // 7. Arbitrary values come last
         sortKey.push(normalizedUtilityClass.includes("[") ? 1 : 0);
-        
+
         return sortKey;
       }
     }
@@ -59,7 +59,7 @@ export function getClassSortKey(className: string): number[] {
 function getVariantSortKey(variant: string): number[] {
   const parts = variant.split(":");
   const sortKey = [];
-  
+
   // Sort by variant parts in VARIANT_CLASSES order
   for (const part of parts) {
     const partIndex = VARIANT_CLASSES.indexOf(part);
@@ -70,10 +70,9 @@ function getVariantSortKey(variant: string): number[] {
       sortKey.push(10000);
     }
   }
-  
+
   return sortKey;
 }
-
 
 function parseClassName(className: string): [string | null, string] {
   // Find the last colon that's not inside square brackets
@@ -142,7 +141,7 @@ export function sortClasses(classes: string[]): string[] {
     for (let i = 0; i < Math.max(orderA.length, orderB.length); i++) {
       const valueA = orderA[i] ?? 0;
       const valueB = orderB[i] ?? 0;
-      
+
       if (valueA !== valueB) {
         return valueA - valueB;
       }
