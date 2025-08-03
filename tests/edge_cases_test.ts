@@ -63,18 +63,6 @@ Deno.test("Array with only literal elements (sorted)", async () => {
   assertEquals(diagnostics.length, 0);
 });
 
-Deno.test("Variable with template literal - whitespace", async () => {
-  const diagnostics = await runLintPluginFromFile(
-    plugin,
-    "var-template-whitespace.tsx",
-  );
-  assertEquals(diagnostics.length >= 1, true);
-  const hasWhitespaceError = diagnostics.some((d) =>
-    d.message.includes("contain extra whitespace")
-  );
-  assertEquals(hasWhitespaceError, true);
-});
-
 Deno.test("Object property with literal key - whitespace", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
@@ -309,34 +297,6 @@ Deno.test("Object key with unsorted classes fix fallback", async () => {
     d.message.includes("should be sorted")
   );
   assertEquals(hasUnsortedError, true);
-});
-
-Deno.test("Variable template literal with class name", async () => {
-  const diagnostics = await runLintPluginFromFile(
-    plugin,
-    "variable-template-literal-class.tsx",
-  );
-  // Should handle variables with 'class' in name and template literal
-  assertEquals(diagnostics.length >= 1, true);
-  const hasError = diagnostics.some((d) =>
-    d.message.includes("variable myClass") ||
-    d.message.includes("should be sorted")
-  );
-  assertEquals(hasError, true);
-});
-
-Deno.test("Variable template literal with style name", async () => {
-  const diagnostics = await runLintPluginFromFile(
-    plugin,
-    "variable-template-literal-style.tsx",
-  );
-  // Should handle variables with 'style' in name and template literal
-  assertEquals(diagnostics.length >= 1, true);
-  const hasError = diagnostics.some((d) =>
-    d.message.includes("variable buttonStyle") ||
-    d.message.includes("should be sorted")
-  );
-  assertEquals(hasError, true);
 });
 
 Deno.test("JSX attribute that is not class or className", async () => {

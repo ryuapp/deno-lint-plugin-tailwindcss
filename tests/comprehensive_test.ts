@@ -25,15 +25,6 @@ Deno.test("clsx array format", async () => {
   assertEquals(hasArrayError, true);
 });
 
-Deno.test("Variable with class-like name", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "variable-class.tsx");
-  assertEquals(diagnostics.length >= 1, true);
-  const hasVariableError = diagnostics.some((d) =>
-    d.message.includes("variable") || d.message.includes("should be sorted")
-  );
-  assertEquals(hasVariableError, true);
-});
-
 Deno.test("cn function support", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "cn-function.tsx");
   assertEquals(diagnostics.length >= 1, true);
@@ -88,28 +79,6 @@ Deno.test("class attribute (not className)", async () => {
   assertEquals(hasClassError, true);
 });
 
-// Test variable with style name
-Deno.test("Variable with style name", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "style-var.tsx");
-  assertEquals(diagnostics.length >= 1, true);
-  const hasStyleError = diagnostics.some((d) =>
-    d.message.includes("variable buttonStyle") ||
-    d.message.includes("should be sorted")
-  );
-  assertEquals(hasStyleError, true);
-});
-
-// Test template literal in variable
-Deno.test("Template literal variable", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "template-var.tsx");
-  assertEquals(diagnostics.length >= 1, true);
-  const hasTemplateVarError = diagnostics.some((d) =>
-    d.message.includes("variable baseClasses") ||
-    d.message.includes("should be sorted")
-  );
-  assertEquals(hasTemplateVarError, true);
-});
-
 // Test object property edge cases
 Deno.test("Object property with non-literal key", async () => {
   const diagnostics = await runLintPluginFromFile(
@@ -136,8 +105,8 @@ Deno.test("JSX expression with non-template literal", async () => {
     plugin,
     "jsx-non-template.tsx",
   );
-  // Should not trigger template literal handler, but may trigger variable handler
-  assertEquals(diagnostics.length >= 1, true);
+  // Variable checking has been removed - should have no errors
+  assertEquals(diagnostics.length, 0);
 });
 
 // Test CallExpression with non-Identifier callee
