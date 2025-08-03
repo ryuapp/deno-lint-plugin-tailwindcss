@@ -7,14 +7,14 @@ Currently, we are building this linter plugin based on [Biome](http://biomejs.de
 ## Roadmap
 
 - [x] Basic Tailwind CSS class sorting (thanks to Biome)
-- [ ] Preserving whitespace
-- [ ] Preserving duplicate classes
-- [ ] Sorting non-standard attributes
-- [ ] Sorting classes in function calls
-- [ ] Sorting classes in template literals
 - [ ] Sorting based on `prettier-plugin-tailwindcss`
+  - [ ] Preserving whitespace
+  - [ ] Preserving duplicate classes
+  - [ ] Sorting non-standard attributes
+  - [ ] Sorting classes in function calls
+  - [ ] Sorting classes in template literals
 
-There are no plans to support TailwindCSS v3.
+There are no plans to support TailwindCSS v3 and `tailwind.config.js`.
 
 ## License
 
