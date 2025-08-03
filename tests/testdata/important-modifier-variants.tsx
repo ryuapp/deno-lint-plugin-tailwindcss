@@ -1,6 +1,6 @@
 export function Component() {
   return (
-    <div className="!hover:bg-blue-500 hover:text-white">
+    <div className="hover:text-white !hover:bg-blue-500">
       Important modifier with variants
     </div>
   );

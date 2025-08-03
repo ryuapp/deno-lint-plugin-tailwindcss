@@ -170,9 +170,9 @@ Deno.test("sortClasses - peer and group variants", () => {
   ];
   const expected = [
     "flex",
+    "group-focus:text-white",
     "group-active:bg-green-500",
     "peer-checked:bg-blue-500",
-    "group-focus:text-white",
     "peer-hover:text-red-500",
   ];
   const result = sortClasses(input);
@@ -205,9 +205,9 @@ Deno.test("sortClasses - mixed complex cases", () => {
   const expected = [
     "flex",
     "sm:peer-focus:bg-blue-500",
+    "md:dark:text-white",
     "lg:hover:text-gray-300",
     "xl:group-hover:data-[state=open]:text-white",
-    "md:dark:text-white",
   ];
   const result = sortClasses(input);
   assertEquals(result, expected);
@@ -292,9 +292,9 @@ Deno.test("sortClasses - animation classes", () => {
     "ease-in-out",
   ];
   const expected = [
-    "animate-spin",
     "animate-bounce",
     "animate-pulse",
+    "animate-spin",
     "transition-colors",
     "duration-300",
     "ease-in-out",

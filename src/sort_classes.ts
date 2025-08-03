@@ -1,22 +1,7 @@
 import { TAILWIND_LAYERS, VARIANT_CLASSES } from "./tailwind_preset.ts";
 
-export function getClassOrder(className: string): number {
+export function getClassSortKey(className: string): number[] {
   const [variant, utilityClass] = parseClassName(className);
-
-  // Calculate variant order - sum all variant parts for complex variants
-  let variantOrder = 0;
-  let hasVariant = false;
-  if (variant) {
-    hasVariant = true;
-    const variantParts = variant.split(":");
-    // Sum all variant indices to ensure complex variants come after simple ones
-    for (const part of variantParts) {
-      const partIndex = VARIANT_CLASSES.indexOf(part);
-      if (partIndex >= 0) {
-        variantOrder += partIndex;
-      }
-    }
-  }
 
   // For matching purposes, normalize negative value classes (e.g., -mt-20 -> mt-20)
   // but keep the original for display
@@ -32,27 +17,63 @@ export function getClassOrder(className: string): number {
       const pattern = layer.classes[classIndex];
 
       if (matchesPattern(normalizedUtilityClass, pattern)) {
-        // Base order calculation
-        const baseOrder = layerIndex * 100000 + classIndex * 100;
-
-        // Add a small offset for negative values to ensure they come first
-        const negativeOffset = isNegative ? -1 : 0;
-
-        // Base classes (no variants) should come before variant classes
-        // Add variant offset to push variant classes later
-        const variantOffset = hasVariant ? 50000 + variantOrder : 0;
-
-        // Arbitrary values (with []) should come after predefined values
-        const arbitraryOffset = normalizedUtilityClass.includes("[") ? 1 : 0;
-
-        return baseOrder + negativeOffset + variantOffset + arbitraryOffset;
+        const sortKey = [];
+        
+        // 1. Non-Tailwind classes come first (0), Tailwind classes second (1)
+        sortKey.push(1);
+        
+        // 2. Base classes before variant classes
+        if (variant) {
+          sortKey.push(1); // has variant
+          const variantParts = getVariantSortKey(variant);
+          sortKey.push(...variantParts);
+        } else {
+          sortKey.push(0); // no variant
+        }
+        
+        // 3. Layer index (base, components, utilities)
+        sortKey.push(layerIndex);
+        
+        // 4. Class index within layer
+        sortKey.push(classIndex);
+        
+        // 5. Negative values come first
+        sortKey.push(isNegative ? 0 : 1);
+        
+        // 6. Important modifier comes last (! prefix)
+        const hasImportant = className.includes("!");
+        sortKey.push(hasImportant ? 1 : 0);
+        
+        // 7. Arbitrary values come last
+        sortKey.push(normalizedUtilityClass.includes("[") ? 1 : 0);
+        
+        return sortKey;
       }
     }
   }
 
-  // Non-Tailwind classes should come first, so give them a negative order
-  return -1;
+  // Non-Tailwind classes should come first
+  return [0];
 }
+
+function getVariantSortKey(variant: string): number[] {
+  const parts = variant.split(":");
+  const sortKey = [];
+  
+  // Sort by variant parts in VARIANT_CLASSES order
+  for (const part of parts) {
+    const partIndex = VARIANT_CLASSES.indexOf(part);
+    if (partIndex >= 0) {
+      sortKey.push(partIndex);
+    } else {
+      // Unknown variant, put at the end
+      sortKey.push(10000);
+    }
+  }
+  
+  return sortKey;
+}
+
 
 function parseClassName(className: string): [string | null, string] {
   // Find the last colon that's not inside square brackets
@@ -114,17 +135,20 @@ export function sortClasses(classes: string[]): string[] {
   const uniqueClasses = [...new Set(classes)];
 
   return uniqueClasses.sort((a, b) => {
-    const orderA = getClassOrder(a);
-    const orderB = getClassOrder(b);
+    const orderA = getClassSortKey(a);
+    const orderB = getClassSortKey(b);
 
-    // If both are custom classes (order = -1), sort them alphabetically
-    if (orderA === -1 && orderB === -1) {
-      // For alphabetical sorting, strip the ! prefix for comparison but preserve in output
-      const aForComparison = a.startsWith("!") ? a.slice(1) : a;
-      const bForComparison = b.startsWith("!") ? b.slice(1) : b;
-      return aForComparison.localeCompare(bForComparison);
+    // Compare arrays element by element
+    for (let i = 0; i < Math.max(orderA.length, orderB.length); i++) {
+      const valueA = orderA[i] ?? 0;
+      const valueB = orderB[i] ?? 0;
+      
+      if (valueA !== valueB) {
+        return valueA - valueB;
+      }
     }
 
-    return orderA - orderB;
+    // Fallback to alphabetical sorting for consistent results
+    return a.localeCompare(b);
   });
 }
