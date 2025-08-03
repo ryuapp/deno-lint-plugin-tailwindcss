@@ -9,9 +9,5 @@ Deno.test("Template with expressions - should not trigger errors", async () => {
   );
 
   // Should not report any errors for template with expressions
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Template literals with expressions should not be processed",
-  );
+  assertEquals(diagnostics.length, 0);
 });

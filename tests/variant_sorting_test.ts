@@ -41,9 +41,5 @@ Deno.test("Variant sorting - sorted classes should have no errors", async () => 
   );
 
   // Should not report any errors for correctly sorted variant classes
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Correctly sorted variant classes should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });

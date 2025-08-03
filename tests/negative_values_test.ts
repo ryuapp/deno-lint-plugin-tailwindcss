@@ -9,9 +9,5 @@ Deno.test("Negative values - classes are properly sorted", async () => {
   );
 
   // Should have no errors since classes are already sorted
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Properly sorted negative value classes should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });

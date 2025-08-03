@@ -9,11 +9,7 @@ Deno.test("Important modifier preserves ! prefix (sorted)", async () => {
   );
 
   // Should not report any errors for correctly sorted classes with ! prefix
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Correctly sorted classes with ! prefix should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });
 
 Deno.test("Important modifier sorting preserves ! prefix", async () => {
@@ -26,11 +22,7 @@ Deno.test("Important modifier sorting preserves ! prefix", async () => {
   const hasSortError = diagnostics.some((d) =>
     d.message.includes("should be sorted")
   );
-  assertEquals(
-    hasSortError,
-    true,
-    "Should report sorting error for unsorted classes with ! prefix",
-  );
+  assertEquals(hasSortError, true);
 
   // Check that the fix preserves the ! prefix
   const sortDiagnostic = diagnostics.find((d) =>
@@ -40,11 +32,7 @@ Deno.test("Important modifier sorting preserves ! prefix", async () => {
     const shouldContainImportant = sortDiagnostic.hint.includes(
       "!text-red-500",
     );
-    assertEquals(
-      shouldContainImportant,
-      true,
-      "Fix should preserve ! prefix in sorted classes",
-    );
+    assertEquals(shouldContainImportant, true);
   }
 });
 
@@ -55,11 +43,7 @@ Deno.test("Important modifier in template literal", async () => {
   );
 
   // Should not report any errors for template literals with ! prefix
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Template literals with ! prefix should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });
 
 Deno.test("Mixed important modifiers", async () => {
@@ -72,11 +56,7 @@ Deno.test("Mixed important modifiers", async () => {
   const hasSortError = diagnostics.some((d) =>
     d.message.includes("should be sorted")
   );
-  assertEquals(
-    hasSortError,
-    true,
-    "Should report sorting error for mixed important modifiers",
-  );
+  assertEquals(hasSortError, true);
 
   // Check that the fix preserves all ! prefixes
   const sortDiagnostic = diagnostics.find((d) =>
@@ -85,8 +65,8 @@ Deno.test("Mixed important modifiers", async () => {
   if (sortDiagnostic && sortDiagnostic.hint) {
     const containsImportantBg = sortDiagnostic.hint.includes("!bg-red-500");
     const containsImportantP = sortDiagnostic.hint.includes("!p-4");
-    assertEquals(containsImportantBg, true, "Fix should preserve !bg-red-500");
-    assertEquals(containsImportantP, true, "Fix should preserve !p-4");
+    assertEquals(containsImportantBg, true);
+    assertEquals(containsImportantP, true);
   }
 });
 
@@ -97,9 +77,5 @@ Deno.test("Important modifier with variants", async () => {
   );
 
   // Should not report any errors for correctly sorted important variants
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Important modifiers with variants should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });

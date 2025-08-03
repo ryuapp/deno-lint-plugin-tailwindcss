@@ -13,18 +13,10 @@ Deno.test("Template literal with multiline expressions - support for multiline t
     d.message.includes("contain extra whitespace")
   );
 
-  assertEquals(
-    hasWhitespaceError,
-    false,
-    "Properly formatted multiline template literal should not have whitespace errors",
-  );
+  assertEquals(hasWhitespaceError, false);
 
   // Should have no errors
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Properly formatted template literal should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });
 
 Deno.test("Template literal preserves trailing space before expression", async () => {
@@ -34,9 +26,5 @@ Deno.test("Template literal preserves trailing space before expression", async (
   );
 
   // This template literal is already sorted, should have no errors
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Template literal with space before expression should have no errors",
-  );
+  assertEquals(diagnostics.length, 0);
 });

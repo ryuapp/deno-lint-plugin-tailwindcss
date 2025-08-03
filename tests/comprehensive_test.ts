@@ -37,7 +37,7 @@ Deno.test("cn function support", async () => {
 Deno.test("Edge cases - empty and single classes", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "edge-cases.tsx");
   // Edge cases should not crash, may or may not have errors
-  assertEquals(diagnostics.length === 0, true);
+  assertEquals(diagnostics.length, 0);
 });
 
 Deno.test("Tab and newline characters", async () => {
@@ -86,7 +86,7 @@ Deno.test("Object property with non-literal key", async () => {
     "object-non-literal.tsx",
   );
   // Should not crash with computed property
-  assertEquals(diagnostics.length === 0, true);
+  assertEquals(diagnostics.length, 0);
 });
 
 // Test array with non-literal elements
@@ -96,7 +96,7 @@ Deno.test("Array with non-literal elements", async () => {
     "array-non-literal.tsx",
   );
   // Should not crash, may detect literal string "text-white"
-  assertEquals(diagnostics.length === 0, true);
+  assertEquals(diagnostics.length, 0);
 });
 
 // Test JSX expression with non-template literal
@@ -116,14 +116,14 @@ Deno.test("CallExpression with non-Identifier callee", async () => {
     "call-non-identifier.tsx",
   );
   // Should not crash with member expression callee
-  assertEquals(diagnostics.length === 0, true);
+  assertEquals(diagnostics.length, 0);
 });
 
 // Test variable declarator with non-Identifier id
 Deno.test("Variable declarator with destructuring", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "destructuring.tsx");
   // Should not crash with destructuring pattern
-  assertEquals(diagnostics.length === 0, true);
+  assertEquals(diagnostics.length, 0);
 });
 
 // Test variable with non-class/style name

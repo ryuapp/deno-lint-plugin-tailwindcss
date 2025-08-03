@@ -9,9 +9,5 @@ Deno.test("Template with multiline expression - should not trigger errors", asyn
   );
 
   // Should not report any errors for template with multiline expressions
-  assertEquals(
-    diagnostics.length,
-    0,
-    "Template literals with multiline expressions should not be processed",
-  );
+  assertEquals(diagnostics.length, 0);
 });
