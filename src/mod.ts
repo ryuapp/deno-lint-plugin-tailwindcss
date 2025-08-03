@@ -116,12 +116,28 @@ const plugin: Deno.lint.Plugin = {
             const sortedClasses = sortClasses([...analysis.classes]);
             let sortedText = sortedClasses.join(" ");
 
-            // For template literals, preserve trailing space if there's a next expression
-            if (isTemplateQuasi && templateInfo?.hasNextExpression) {
+            // For template literals, preserve leading and trailing spaces
+            if (isTemplateQuasi && templateInfo) {
+              const originalHasLeadingSpace = analysis.originalText.startsWith(
+                " ",
+              );
               const originalHasTrailingSpace = analysis.originalText.endsWith(
                 " ",
               );
-              if (originalHasTrailingSpace && !sortedText.endsWith(" ")) {
+
+              // Preserve leading space if there's a previous expression
+              if (
+                templateInfo.hasPrevExpression && originalHasLeadingSpace &&
+                !sortedText.startsWith(" ")
+              ) {
+                sortedText = " " + sortedText;
+              }
+
+              // Preserve trailing space if there's a next expression
+              if (
+                templateInfo.hasNextExpression && originalHasTrailingSpace &&
+                !sortedText.endsWith(" ")
+              ) {
                 sortedText += " ";
               }
             }
