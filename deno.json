@@ -16,6 +16,7 @@
     "@std/assert": "jsr:@std/assert@1"
   },
   "tasks": {
+    "fix": "deno fmt && deno lint --fix",
     "test": "deno test -R",
     "test:coverage": "deno test -R --coverage"
   },
