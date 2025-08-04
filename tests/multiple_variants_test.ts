@@ -5,7 +5,7 @@ import { runLintPluginFromFile } from "./test-utils.ts";
 Deno.test("Multiple variants - already sorted", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
-    "multiple-variants-sorted.tsx",
+    "multiple-variants.tsx",
   );
   // Classes should already be sorted according to Tailwind layer order
   assertEquals(diagnostics.length, 0);

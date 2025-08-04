@@ -44,7 +44,7 @@ Deno.test("sort-classes rule - handles clsx object notation", async () => {
 });
 
 Deno.test("sort-classes rule - no errors on sorted classes", async () => {
-  const diagnostics = await runLintPlugin(plugin, "sorted.tsx");
+  const diagnostics = await runLintPlugin(plugin, "basic.tsx");
 
   assertEquals(diagnostics.length, 0);
 });

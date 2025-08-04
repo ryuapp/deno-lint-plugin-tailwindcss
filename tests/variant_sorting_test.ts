@@ -5,7 +5,7 @@ import { runLintPluginFromFile } from "./test-utils.ts";
 Deno.test("Variant sorting - unsorted classes should trigger error", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
-    "variant-sorting-test.tsx",
+    "variant-sorting-test-unsorted.tsx",
   );
 
   // Should report sorting error
@@ -37,7 +37,7 @@ Deno.test("Variant sorting - unsorted classes should trigger error", async () =>
 Deno.test("Variant sorting - sorted classes should have no errors", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
-    "variant-sorting-test-sorted.tsx",
+    "variant-sorting-test.tsx",
   );
 
   // Should not report any errors for correctly sorted variant classes

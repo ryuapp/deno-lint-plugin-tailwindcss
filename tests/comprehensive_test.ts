@@ -7,7 +7,7 @@ import { runLintPluginFromFile } from "./test-utils.ts";
 Deno.test("Template literal with unsorted classes", async () => {
   const diagnostics = await runLintPluginFromFile(
     plugin,
-    "template-literal.tsx",
+    "template-literal-unsorted.tsx",
   );
   assertEquals(diagnostics.length >= 1, true);
   const hasTemplateError = diagnostics.some((d) =>
@@ -17,7 +17,10 @@ Deno.test("Template literal with unsorted classes", async () => {
 });
 
 Deno.test("clsx array format", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "clsx-array.tsx");
+  const diagnostics = await runLintPluginFromFile(
+    plugin,
+    "clsx-array-unsorted.tsx",
+  );
   assertEquals(diagnostics.length >= 1, true);
   const hasArrayError = diagnostics.some((d) =>
     d.message.includes("array") || d.message.includes("should be sorted")
@@ -26,7 +29,10 @@ Deno.test("clsx array format", async () => {
 });
 
 Deno.test("cn function support", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "cn-function.tsx");
+  const diagnostics = await runLintPluginFromFile(
+    plugin,
+    "cn-function-unsorted.tsx",
+  );
   assertEquals(diagnostics.length >= 1, true);
   const hasCnError = diagnostics.some((d) =>
     d.message.includes("cn()") || d.message.includes("should be sorted")
@@ -36,11 +42,7 @@ Deno.test("cn function support", async () => {
 
 Deno.test("tw function support", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "tw-function.tsx");
-  assertEquals(diagnostics.length >= 1, true);
-  const hasTwError = diagnostics.some((d) =>
-    d.message.includes("tw``") || d.message.includes("should be sorted")
-  );
-  assertEquals(hasTwError, true);
+  assertEquals(diagnostics.length, 0);
 });
 
 Deno.test("tw function unsorted classes", async () => {
@@ -79,7 +81,10 @@ Deno.test("Tab and newline characters", async () => {
 
 // Test JSX attribute variations
 Deno.test("class attribute (not className)", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "class-attr.tsx");
+  const diagnostics = await runLintPluginFromFile(
+    plugin,
+    "class-attr-unsorted.tsx",
+  );
   assertEquals(diagnostics.length >= 1, true);
   const hasClassError = diagnostics.some((d) =>
     d.message.includes("class attribute") ||

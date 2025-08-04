@@ -58,7 +58,7 @@ Deno.test("CallExpression with unknown arg type", async () => {
 });
 
 Deno.test("Array with only literal elements (sorted)", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "array-sorted.tsx");
+  const diagnostics = await runLintPluginFromFile(plugin, "array.tsx");
   // Should be properly sorted, no errors
   assertEquals(diagnostics.length, 0);
 });
