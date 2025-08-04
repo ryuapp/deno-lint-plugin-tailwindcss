@@ -17,7 +17,7 @@ Add the plugin to your deno.json(c):
 // deno.json(c)
 {
   "lint": {
-    "plugins": ["jsr:@ryu/deno-lint-plugin-tailwindcss@0.1.0"]
+    "plugins": ["jsr:@ryu/deno-lint-plugin-tailwindcss@0.1.1"]
   }
 }
 ```
