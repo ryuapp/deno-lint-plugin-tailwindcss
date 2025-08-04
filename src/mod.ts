@@ -1,164 +1,18 @@
 import { sortClasses } from "./sort_classes.ts";
 import {
-  analyzeClassString,
-  type ClassAnalysisResult,
+  extractClassesFromLiteral,
   extractClassesFromString,
+  extractClassesFromTemplateElement,
   hasExtraWhitespace,
   isClassesSorted,
 } from "./utils.ts";
-
-type DenoLintNode =
-  | Deno.lint.JSXElement
-  | Deno.lint.Literal
-  | Deno.lint.JSXExpressionContainer
-  | Deno.lint.TemplateElement;
-
-function extractClassesFromLiteral(
-  node: Deno.lint.Literal,
-): ClassAnalysisResult | null {
-  const value = node.value;
-  if (typeof value !== "string") return null;
-
-  return analyzeClassString(value);
-}
-
-function extractClassesFromTemplateElement(
-  element: Deno.lint.TemplateElement,
-): ClassAnalysisResult {
-  const value = element.cooked;
-
-  return analyzeClassString(value);
-}
+import { reportExtraWhitespace, reportUnsortedClasses } from "./reports.ts";
 
 const plugin: Deno.lint.Plugin = {
   name: "unstable-tailwindcss-plugin",
   rules: {
     "sort-classes": {
       create(context) {
-        function reportExtraWhitespace(
-          node: DenoLintNode,
-          value: string,
-          attributeName: string,
-          isTemplateQuasi = false,
-          templateInfo?: {
-            hasNextExpression: boolean;
-            hasPrevExpression: boolean;
-          },
-        ) {
-          const shouldPreserveSpacing = isTemplateQuasi && templateInfo &&
-            (templateInfo.hasNextExpression || templateInfo.hasPrevExpression);
-
-          if (hasExtraWhitespace(value, shouldPreserveSpacing)) {
-            let cleanedValue: string;
-
-            if (isTemplateQuasi && templateInfo) {
-              // For template literal quasis, preserve necessary trailing/leading spaces
-              // that might be needed for proper spacing with expressions
-
-              // Be more careful about cleaning whitespace in template literals
-              // Replace multiple spaces with single spaces, but preserve necessary newlines/formatting
-              cleanedValue = value.replace(/[ ]{2,}/g, " "); // Only collapse multiple spaces
-
-              // Clean up problematic whitespace patterns while preserving structure
-              cleanedValue = cleanedValue.replace(/[\t\n\r\f\v]{2,}/g, "\n"); // Collapse multiple newlines
-              cleanedValue = cleanedValue.replace(/[ \t]+\n/g, "\n"); // Remove trailing spaces before newlines
-              cleanedValue = cleanedValue.replace(/\n[ \t]+/g, "\n"); // Remove leading spaces after newlines
-
-              // Preserve leading space if there's a previous expression and this quasi starts with space
-              const shouldPreserveLeading = templateInfo.hasPrevExpression &&
-                value.startsWith(" ");
-              // Preserve trailing space if there's a next expression and this quasi ends with space
-              const shouldPreserveTrailing = templateInfo.hasNextExpression &&
-                value.endsWith(" ");
-
-              // Only trim edges if it won't affect expression spacing
-              if (!shouldPreserveLeading && !shouldPreserveTrailing) {
-                cleanedValue = cleanedValue.trim();
-              } else if (!shouldPreserveLeading) {
-                cleanedValue = cleanedValue.trimStart();
-              } else if (!shouldPreserveTrailing) {
-                cleanedValue = cleanedValue.trimEnd();
-              }
-            } else {
-              cleanedValue = value.trim().replace(/\s+/g, " ");
-            }
-
-            context.report({
-              node,
-              message:
-                `TailwindCSS classes in ${attributeName} contain extra whitespace`,
-              hint: `Remove extra whitespace to get: "${cleanedValue}"`,
-              fix(fixer) {
-                if (node.type === "Literal") {
-                  return fixer.replaceText(node, `"${cleanedValue}"`);
-                } else if (node.type === "TemplateElement") {
-                  return fixer.replaceText(node, cleanedValue);
-                }
-                return [];
-              },
-            });
-          }
-        }
-
-        function reportUnsortedClasses(
-          node: DenoLintNode,
-          analysis: ClassAnalysisResult,
-          attributeName: string,
-          isTemplateQuasi = false,
-          templateInfo?: {
-            hasNextExpression: boolean;
-            hasPrevExpression: boolean;
-          },
-        ) {
-          if (analysis.classes.length <= 1) return;
-
-          if (!isClassesSorted(analysis.classes)) {
-            const sortedClasses = sortClasses([...analysis.classes]);
-            let sortedText = sortedClasses.join(" ");
-
-            // For template literals, preserve leading and trailing spaces
-            if (isTemplateQuasi && templateInfo) {
-              const originalHasLeadingSpace = analysis.originalText.startsWith(
-                " ",
-              );
-              const originalHasTrailingSpace = analysis.originalText.endsWith(
-                " ",
-              );
-
-              // Preserve leading space if there's a previous expression
-              if (
-                templateInfo.hasPrevExpression && originalHasLeadingSpace &&
-                !sortedText.startsWith(" ")
-              ) {
-                sortedText = " " + sortedText;
-              }
-
-              // Preserve trailing space if there's a next expression
-              if (
-                templateInfo.hasNextExpression && originalHasTrailingSpace &&
-                !sortedText.endsWith(" ")
-              ) {
-                sortedText += " ";
-              }
-            }
-
-            context.report({
-              node,
-              message:
-                `TailwindCSS classes in ${attributeName} attribute should be sorted`,
-              hint: `Sort the following: ${sortedText}`,
-              fix(fixer) {
-                if (node.type === "Literal") {
-                  return fixer.replaceText(node, `"${sortedText}"`);
-                } else if (node.type === "TemplateElement") {
-                  return fixer.replaceText(node, sortedText);
-                }
-                return [];
-              },
-            });
-          }
-        }
-
         return {
           JSXAttribute(node) {
             const attrName = node.name?.name;
@@ -171,8 +25,13 @@ const plugin: Deno.lint.Plugin = {
               const analysis = extractClassesFromLiteral(value);
 
               if (analysis) {
-                reportExtraWhitespace(value, analysis.originalText, attrName);
-                reportUnsortedClasses(value, analysis, attrName);
+                reportExtraWhitespace(
+                  context,
+                  value,
+                  analysis.originalText,
+                  attrName,
+                );
+                reportUnsortedClasses(context, value, analysis, attrName);
               }
             } else if (value.type === "JSXExpressionContainer") {
               const expression = value.expression;
@@ -218,6 +77,7 @@ const plugin: Deno.lint.Plugin = {
                         // This is a whitespace-only quasi, check if it has problematic patterns
                         if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
                           reportExtraWhitespace(
+                            context,
                             element,
                             analysis.originalText,
                             attrName,
@@ -227,6 +87,7 @@ const plugin: Deno.lint.Plugin = {
                       } else {
                         // Normal processing for quasi parts with actual classes
                         reportExtraWhitespace(
+                          context,
                           element,
                           analysis.originalText,
                           attrName,
@@ -234,6 +95,7 @@ const plugin: Deno.lint.Plugin = {
                           templateInfo,
                         );
                         reportUnsortedClasses(
+                          context,
                           element,
                           analysis,
                           attrName,
@@ -261,11 +123,13 @@ const plugin: Deno.lint.Plugin = {
                 const analysis = extractClassesFromLiteral(arg);
                 if (analysis) {
                   reportExtraWhitespace(
+                    context,
                     arg,
                     analysis.originalText,
                     `${functionName}() argument`,
                   );
                   reportUnsortedClasses(
+                    context,
                     arg,
                     analysis,
                     `${functionName}() argument`,
@@ -312,6 +176,7 @@ const plugin: Deno.lint.Plugin = {
                         // This is a whitespace-only quasi, check if it has problematic patterns
                         if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
                           reportExtraWhitespace(
+                            context,
                             element,
                             analysis.originalText,
                             `${functionName}() template`,
@@ -321,6 +186,7 @@ const plugin: Deno.lint.Plugin = {
                       } else {
                         // Normal processing for quasi parts with actual classes
                         reportExtraWhitespace(
+                          context,
                           element,
                           analysis.originalText,
                           `${functionName}() template`,
@@ -328,6 +194,7 @@ const plugin: Deno.lint.Plugin = {
                           templateInfo,
                         );
                         reportUnsortedClasses(
+                          context,
                           element,
                           analysis,
                           `${functionName}() template`,
@@ -345,11 +212,13 @@ const plugin: Deno.lint.Plugin = {
                     const analysis = extractClassesFromLiteral(prop.key);
                     if (analysis) {
                       reportExtraWhitespace(
+                        context,
                         prop.key,
                         analysis.originalText,
                         `${functionName}() object key`,
                       );
                       reportUnsortedClasses(
+                        context,
                         prop.key,
                         analysis,
                         `${functionName}() object key`,
@@ -372,6 +241,7 @@ const plugin: Deno.lint.Plugin = {
                   ) {
                     // Check for extra whitespace in each element
                     reportExtraWhitespace(
+                      context,
                       element,
                       element.value,
                       `${functionName}() array element`,
@@ -460,6 +330,7 @@ const plugin: Deno.lint.Plugin = {
                     // This is a whitespace-only quasi, check if it has problematic patterns
                     if (hasExtraWhitespace(analysis.originalText, false)) { // Use strict whitespace checking
                       reportExtraWhitespace(
+                        context,
                         element,
                         analysis.originalText,
                         `${functionName}\`\` template`,
@@ -469,6 +340,7 @@ const plugin: Deno.lint.Plugin = {
                   } else {
                     // Normal processing for quasi parts with actual classes
                     reportExtraWhitespace(
+                      context,
                       element,
                       analysis.originalText,
                       `${functionName}\`\` template`,
@@ -476,6 +348,7 @@ const plugin: Deno.lint.Plugin = {
                       templateInfo,
                     );
                     reportUnsortedClasses(
+                      context,
                       element,
                       analysis,
                       `${functionName}\`\` template`,

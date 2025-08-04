@@ -1,7 +1,9 @@
 import { assertEquals } from "@std/assert";
 import {
   analyzeClassString,
+  extractClassesFromLiteral,
   extractClassesFromString,
+  extractClassesFromTemplateElement,
   hasExtraWhitespace,
   isClassesSorted,
 } from "./utils.ts";
@@ -172,4 +174,71 @@ Deno.test("isClassesSorted - duplicate classes", () => {
 Deno.test("isClassesSorted - with variants", () => {
   assertEquals(isClassesSorted(["flex", "p-4", "hover:bg-blue-500"]), true);
   assertEquals(isClassesSorted(["hover:bg-blue-500", "flex", "p-4"]), false);
+});
+
+// Tests for new node utility functions
+
+Deno.test("extractClassesFromLiteral - string literal", () => {
+  const node = {
+    type: "Literal",
+    value: "flex items-center p-4",
+  } as Deno.lint.Literal;
+
+  const result = extractClassesFromLiteral(node);
+  assertEquals(result?.classes, ["flex", "items-center", "p-4"]);
+  assertEquals(result?.originalText, "flex items-center p-4");
+});
+
+Deno.test("extractClassesFromLiteral - non-string literal", () => {
+  const node = {
+    type: "Literal",
+    value: 42,
+  } as Deno.lint.Literal;
+
+  const result = extractClassesFromLiteral(node);
+  assertEquals(result, null);
+});
+
+Deno.test("extractClassesFromLiteral - empty string", () => {
+  const node = {
+    type: "Literal",
+    value: "",
+  } as Deno.lint.Literal;
+
+  const result = extractClassesFromLiteral(node);
+  assertEquals(result?.classes, []);
+  assertEquals(result?.originalText, "");
+});
+
+Deno.test("extractClassesFromTemplateElement - basic functionality", () => {
+  const element = {
+    type: "TemplateElement",
+    cooked: "flex items-center",
+  } as Deno.lint.TemplateElement;
+
+  const result = extractClassesFromTemplateElement(element);
+  assertEquals(result.classes, ["flex", "items-center"]);
+  assertEquals(result.originalText, "flex items-center");
+});
+
+Deno.test("extractClassesFromTemplateElement - with whitespace", () => {
+  const element = {
+    type: "TemplateElement",
+    cooked: " flex  items-center ",
+  } as Deno.lint.TemplateElement;
+
+  const result = extractClassesFromTemplateElement(element);
+  assertEquals(result.classes, ["flex", "items-center"]);
+  assertEquals(result.originalText, " flex  items-center ");
+});
+
+Deno.test("extractClassesFromTemplateElement - empty", () => {
+  const element = {
+    type: "TemplateElement",
+    cooked: "",
+  } as Deno.lint.TemplateElement;
+
+  const result = extractClassesFromTemplateElement(element);
+  assertEquals(result.classes, []);
+  assertEquals(result.originalText, "");
 });

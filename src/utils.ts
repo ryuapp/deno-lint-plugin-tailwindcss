@@ -102,3 +102,20 @@ export function isClassesSorted(classes: string[]): boolean {
 
   return true;
 }
+
+export function extractClassesFromLiteral(
+  node: Deno.lint.Literal,
+): ClassAnalysisResult | null {
+  const value = node.value;
+  if (typeof value !== "string") return null;
+
+  return analyzeClassString(value);
+}
+
+export function extractClassesFromTemplateElement(
+  element: Deno.lint.TemplateElement,
+): ClassAnalysisResult {
+  const value = element.cooked;
+
+  return analyzeClassString(value);
+}
