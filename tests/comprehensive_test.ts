@@ -49,25 +49,6 @@ Deno.test("Tab and newline characters", async () => {
   assertEquals(hasWhitespaceError, true);
 });
 
-// Test different function names
-Deno.test("classNames function", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "classnames.tsx");
-  assertEquals(diagnostics.length >= 1, true);
-  const hasClassNamesError = diagnostics.some((d) =>
-    d.message.includes("classNames()") || d.message.includes("should be sorted")
-  );
-  assertEquals(hasClassNamesError, true);
-});
-
-Deno.test("classList function", async () => {
-  const diagnostics = await runLintPluginFromFile(plugin, "classlist.tsx");
-  assertEquals(diagnostics.length >= 1, true);
-  const hasClassListError = diagnostics.some((d) =>
-    d.message.includes("classList()") || d.message.includes("should be sorted")
-  );
-  assertEquals(hasClassListError, true);
-});
-
 // Test JSX attribute variations
 Deno.test("class attribute (not className)", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "class-attr.tsx");

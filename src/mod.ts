@@ -254,7 +254,7 @@ const plugin: Deno.lint.Plugin = {
 
             const functionName = node.callee.name;
             if (
-              !["clsx", "cn", "classNames", "classList"].includes(functionName)
+              !["clsx", "cn"].includes(functionName)
             ) return;
 
             for (const arg of node.arguments || []) {
