@@ -146,8 +146,7 @@ const plugin: Deno.lint.Plugin = {
               node,
               message:
                 `TailwindCSS classes in ${attributeName} attribute should be sorted`,
-              hint:
-                `Use \`deno lint --fix\` command or sort the following: ${sortedText}`,
+              hint: `Sort the following: ${sortedText}`,
               fix(fixer) {
                 if (node.type === "Literal") {
                   return fixer.replaceText(node, `"${sortedText}"`);
