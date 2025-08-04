@@ -5,11 +5,28 @@ import {
   isClassesSorted,
 } from "./utils.ts";
 
+/**
+ * Information about a template literal's position relative to expressions.
+ * Used to determine proper spacing when processing template literal parts.
+ */
 interface TemplateInfo {
+  /** Whether there is an expression after this template part */
   hasNextExpression: boolean;
+  /** Whether there is an expression before this template part */
   hasPrevExpression: boolean;
 }
 
+/**
+ * Reports and fixes extra whitespace issues in Tailwind CSS class strings.
+ * Handles both regular literals and template literal parts with different spacing rules.
+ *
+ * @param context - The lint rule execution context
+ * @param node - The AST node containing the class string
+ * @param value - The string value to check for extra whitespace
+ * @param attributeName - Name of the attribute or context for error messages
+ * @param isTemplateQuasi - Whether this is part of a template literal
+ * @param templateInfo - Information about template literal positioning
+ */
 export function reportExtraWhitespace(
   context: Deno.lint.RuleContext,
   node: Deno.lint.Literal | Deno.lint.TemplateElement,
@@ -73,6 +90,17 @@ export function reportExtraWhitespace(
   }
 }
 
+/**
+ * Reports and fixes improperly sorted Tailwind CSS classes.
+ * Preserves proper spacing for template literals while ensuring correct class order.
+ *
+ * @param context - The lint rule execution context
+ * @param node - The AST node containing the class string
+ * @param analysis - Result of analyzing the class string
+ * @param attributeName - Name of the attribute or context for error messages
+ * @param isTemplateQuasi - Whether this is part of a template literal
+ * @param templateInfo - Information about template literal positioning
+ */
 export function reportUnsortedClasses(
   context: Deno.lint.RuleContext,
   node: Deno.lint.Literal | Deno.lint.TemplateElement,

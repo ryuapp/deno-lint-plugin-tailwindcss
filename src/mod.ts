@@ -8,6 +8,19 @@ import {
 } from "./utils.ts";
 import { reportExtraWhitespace, reportUnsortedClasses } from "./reports.ts";
 
+/**
+ * Deno Lint Plugin for Tailwind CSS class sorting and formatting.
+ *
+ * @example
+ * ```jsonc
+ * // deno.json
+ * {
+ *   "lint": {
+ *     "plugins": ["jsr:@ryu/deno-lint-plugin-tailwindcss"]
+ *   }
+ * }
+ * ```
+ */
 const plugin: Deno.lint.Plugin = {
   name: "unstable-tailwindcss-plugin",
   rules: {

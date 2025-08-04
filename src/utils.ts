@@ -7,13 +7,34 @@ const MIXED_WHITESPACE_REGEX = /[ \t]+\n|\n[ \t]+/;
 const OTHER_WHITESPACE_REGEX = /[\t\n\r\f\v]/;
 const SPLIT_WHITESPACE_REGEX = /\s+/;
 
+/**
+ * Result of analyzing a class string, containing extracted classes
+ * and metadata about the original text.
+ */
 export interface ClassAnalysisResult {
+  /** Array of individual class names extracted from the string */
   classes: string[];
+  /** Starting index of the class string (always 0 for current implementation) */
   startIndex: number;
+  /** Ending index of the class string */
   endIndex: number;
+  /** Original text before processing */
   originalText: string;
 }
 
+/**
+ * Extracts individual class names from a whitespace-separated string.
+ * Filters out empty strings and template expressions.
+ *
+ * @param value - The string containing class names separated by whitespace
+ * @returns Array of individual class names
+ *
+ * @example
+ * ```ts
+ * extractClassesFromString("flex items-center p-4")
+ * // Returns: ["flex", "items-center", "p-4"]
+ * ```
+ */
 export function extractClassesFromString(value: string): string[] {
   return value
     .split(SPLIT_WHITESPACE_REGEX)
@@ -21,6 +42,23 @@ export function extractClassesFromString(value: string): string[] {
     .filter((cls) => cls.length > 0 && !cls.startsWith("${"));
 }
 
+/**
+ * Analyzes a class string and returns detailed information about it.
+ *
+ * @param value - The class string to analyze
+ * @returns Analysis result containing classes and metadata
+ *
+ * @example
+ * ```ts
+ * analyzeClassString("flex items-center")
+ * // Returns: {
+ * //   classes: ["flex", "items-center"],
+ * //   startIndex: 0,
+ * //   endIndex: 18,
+ * //   originalText: "flex items-center"
+ * // }
+ * ```
+ */
 export function analyzeClassString(value: string): ClassAnalysisResult {
   const classes = extractClassesFromString(value);
   return {
@@ -31,6 +69,20 @@ export function analyzeClassString(value: string): ClassAnalysisResult {
   };
 }
 
+/**
+ * Checks if a string contains extra whitespace that should be cleaned up.
+ *
+ * @param value - The string to check for extra whitespace
+ * @param preserveSpacing - Whether to preserve some spacing for template literals
+ * @returns True if the string contains problematic whitespace
+ *
+ * @example
+ * ```ts
+ * hasExtraWhitespace("flex  items-center") // Returns: true (multiple spaces)
+ * hasExtraWhitespace(" flex ") // Returns: true (leading/trailing spaces)
+ * hasExtraWhitespace("flex items-center") // Returns: false (clean)
+ * ```
+ */
 export function hasExtraWhitespace(
   value: string,
   preserveSpacing = false,
@@ -72,6 +124,19 @@ function compareSortKeys(keyA: number[], keyB: number[]): number {
   return 0;
 }
 
+/**
+ * Checks if an array of CSS classes is sorted according to Tailwind CSS conventions.
+ * Uses an optimized O(n) algorithm that compares adjacent elements without full sorting.
+ *
+ * @param classes - Array of CSS class names to check
+ * @returns True if the classes are properly sorted
+ *
+ * @example
+ * ```ts
+ * isClassesSorted(["flex", "items-center", "p-4"]) // Returns: true
+ * isClassesSorted(["p-4", "flex", "items-center"]) // Returns: false
+ * ```
+ */
 export function isClassesSorted(classes: string[]): boolean {
   if (classes.length <= 1) return true;
 
@@ -103,6 +168,20 @@ export function isClassesSorted(classes: string[]): boolean {
   return true;
 }
 
+/**
+ * Extracts class information from a Deno lint Literal AST node.
+ * Only processes string literals, returns null for other types.
+ *
+ * @param node - The Literal AST node to extract classes from
+ * @returns Analysis result or null if the node is not a string literal
+ *
+ * @example
+ * ```ts
+ * const node = { type: "Literal", value: "flex items-center" } as Deno.lint.Literal;
+ * extractClassesFromLiteral(node)
+ * // Returns: { classes: ["flex", "items-center"], ... }
+ * ```
+ */
 export function extractClassesFromLiteral(
   node: Deno.lint.Literal,
 ): ClassAnalysisResult | null {
@@ -112,6 +191,20 @@ export function extractClassesFromLiteral(
   return analyzeClassString(value);
 }
 
+/**
+ * Extracts class information from a Deno lint TemplateElement AST node.
+ * Used for processing template literal parts in expressions like `flex ${condition ? 'active' : ''}`.
+ *
+ * @param element - The TemplateElement AST node to extract classes from
+ * @returns Analysis result containing classes and metadata
+ *
+ * @example
+ * ```ts
+ * const element = { type: "TemplateElement", cooked: "flex items-center" } as Deno.lint.TemplateElement;
+ * extractClassesFromTemplateElement(element)
+ * // Returns: { classes: ["flex", "items-center"], ... }
+ * ```
+ */
 export function extractClassesFromTemplateElement(
   element: Deno.lint.TemplateElement,
 ): ClassAnalysisResult {
