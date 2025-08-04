@@ -1,6 +1,6 @@
 # @ryu/deno-lint-plugin-tailwindcss
 
-A [Deno Lint Plugin](https://docs.deno.com/runtime/reference/lint_plugins/) for Tailwind CSS that automatically sorts classes based on our recommended class order.
+A [Deno Lint Plugin](https://docs.deno.com/runtime/reference/lint_plugins/) for Tailwind CSS that automatically sorts classes.
 
 > [!IMPORTANT]
 > Currently, we are building this linter plugin rule based on [Biome](http://biomejs.dev/)'s [use_sorted_classes](https://biomejs.dev/ja/linter/rules/use-sorted-classes/) due to limitations in Deno Lint specification, but in the future we plan to replace it with the same rules as [prettier-plugin-tailwindcss](https://github.com/tailwindlabs/prettier-plugin-tailwindcss). Many breaking changes may occur until the migration is complete.
