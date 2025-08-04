@@ -2,19 +2,29 @@
 
 A [Deno Lint Plugin](https://docs.deno.com/runtime/reference/lint_plugins/) for Tailwind CSS that automatically sorts classes based on our recommended class order.
 
-Currently, we are building this linter plugin based on [Biome](http://biomejs.dev/)'s [use_sorted_classes](https://biomejs.dev/ja/linter/rules/use-sorted-classes/), but in the future this will be replaced by [prettier-plugin-tailwindcss](https://github.com/tailwindlabs/prettier-plugin-tailwindcss). Many breaking changes may occur until the migration is complete.
+> [!IMPORTANT]
+> Currently, we are building this linter plugin rule based on [Biome](http://biomejs.dev/)'s [use_sorted_classes](https://biomejs.dev/ja/linter/rules/use-sorted-classes/) due to limitations in Deno Lint specification, but in the future we plan to replace it with the same rules as [prettier-plugin-tailwindcss](https://github.com/tailwindlabs/prettier-plugin-tailwindcss). Many breaking changes may occur until the migration is complete.
 
-## Roadmap
+## Installation
 
-- [x] Basic Tailwind CSS class sorting (thanks to Biome)
-- [ ] Sorting based on `prettier-plugin-tailwindcss`
-  - [ ] Preserving whitespace
-  - [ ] Preserving duplicate classes
-  - [ ] Sorting non-standard attributes
-  - [ ] Sorting classes in function calls
-  - [ ] Sorting classes in template literals
+```sh
+deno add --jsr @ryu/deno-lint-plugin-tailwindcss
+```
 
-There are no plans to support TailwindCSS v3 and `tailwind.config.js`.
+Then add the plugin to your configuration:
+
+```jsonc
+// deno.json(c)
+{
+  "lint": {
+    "plugins": ["@ryu/deno-lint-plugin-tailwindcss"]
+  }
+}
+```
+
+## Philosophy
+
+Although this is a linter plugin, its role is primarily formatting, so it only provides minimal options, in keeping with [Prettier's option philosophy](https://prettier.io/docs/option-philosophy).
 
 ## License
 
