@@ -34,6 +34,34 @@ Deno.test("cn function support", async () => {
   assertEquals(hasCnError, true);
 });
 
+Deno.test("tw function support", async () => {
+  const diagnostics = await runLintPluginFromFile(plugin, "tw-function.tsx");
+  assertEquals(diagnostics.length >= 1, true);
+  const hasTwError = diagnostics.some((d) =>
+    d.message.includes("tw``") || d.message.includes("should be sorted")
+  );
+  assertEquals(hasTwError, true);
+});
+
+Deno.test("tw function unsorted classes", async () => {
+  const diagnostics = await runLintPluginFromFile(
+    plugin,
+    "tw-function-unsorted.tsx",
+  );
+  assertEquals(diagnostics.length >= 1, true);
+
+  // Should detect both sorting and whitespace issues
+  const hasSortingError = diagnostics.some((d) =>
+    d.message.includes("should be sorted")
+  );
+  const hasWhitespaceError = diagnostics.some((d) =>
+    d.message.includes("extra whitespace")
+  );
+
+  assertEquals(hasSortingError, true);
+  assertEquals(hasWhitespaceError, true);
+});
+
 Deno.test("Edge cases - empty and single classes", async () => {
   const diagnostics = await runLintPluginFromFile(plugin, "edge-cases.tsx");
   // Edge cases should not crash, may or may not have errors
