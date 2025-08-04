@@ -1,15 +1,60 @@
 import { TAILWIND_LAYERS, VARIANT_CLASSES } from "./tailwind_preset.ts";
 
+// Pre-compiled performance optimization structures
+const EXACT_MATCH_INDEX = new Map<
+  string,
+  { layerIndex: number; classIndex: number }
+>();
+const PREFIX_MATCH_INDEX = new Map<
+  string,
+  { layerIndex: number; classIndex: number }
+>();
+const VARIANT_INDEX = new Map<string, number>();
+
+// Initialize pattern indexes for O(1) lookups
+function initializePatternIndexes() {
+  // Build exact match and prefix indexes
+  for (let layerIndex = 0; layerIndex < TAILWIND_LAYERS.length; layerIndex++) {
+    const layer = TAILWIND_LAYERS[layerIndex];
+    for (let classIndex = 0; classIndex < layer.classes.length; classIndex++) {
+      const pattern = layer.classes[classIndex];
+
+      if (pattern.endsWith("$")) {
+        // Exact match pattern
+        const exactMatch = pattern.slice(0, -1);
+        EXACT_MATCH_INDEX.set(exactMatch, { layerIndex, classIndex });
+      } else if (pattern.endsWith("-")) {
+        // Prefix match pattern - only store if not already set (preserve first occurrence)
+        const prefix = pattern.slice(0, -1);
+        if (!PREFIX_MATCH_INDEX.has(prefix)) {
+          PREFIX_MATCH_INDEX.set(prefix, { layerIndex, classIndex });
+        }
+      } else {
+        // Direct match pattern
+        EXACT_MATCH_INDEX.set(pattern, { layerIndex, classIndex });
+      }
+    }
+  }
+
+  // Build variant index
+  VARIANT_CLASSES.forEach((variant, index) => {
+    VARIANT_INDEX.set(variant, index);
+  });
+}
+
+// Initialize on module load
+initializePatternIndexes();
+
 export function getClassSortKey(className: string): number[] {
   const [variant, utilityClass] = parseClassName(className);
 
   // For matching purposes, normalize negative value classes (e.g., -mt-20 -> mt-20)
-  // but keep the original for display
   const isNegative = utilityClass.startsWith("-");
   const normalizedUtilityClass = isNegative
     ? utilityClass.slice(1)
     : utilityClass;
 
+  // Use original algorithm for correctness - iterate through patterns in order
   for (let layerIndex = 0; layerIndex < TAILWIND_LAYERS.length; layerIndex++) {
     const layer = TAILWIND_LAYERS[layerIndex];
 
@@ -60,10 +105,10 @@ function getVariantSortKey(variant: string): number[] {
   const parts = variant.split(":");
   const sortKey = [];
 
-  // Sort by variant parts in VARIANT_CLASSES order
+  // Fast O(1) variant lookup using pre-built index
   for (const part of parts) {
-    const partIndex = VARIANT_CLASSES.indexOf(part);
-    if (partIndex >= 0) {
+    const partIndex = VARIANT_INDEX.get(part);
+    if (partIndex !== undefined) {
       sortKey.push(partIndex);
     } else {
       // Unknown variant, put at the end
