@@ -3,10 +3,15 @@ import {
   extractClassesFromLiteral,
   extractClassesFromString,
   extractClassesFromTemplateElement,
+  findDuplicateClasses,
   hasExtraWhitespace,
   isClassesSorted,
 } from "./utils.ts";
-import { reportExtraWhitespace, reportUnsortedClasses } from "./reports.ts";
+import {
+  reportDuplicateClasses,
+  reportExtraWhitespace,
+  reportUnsortedClasses,
+} from "./reports.ts";
 
 /**
  * Deno Lint Plugin for Tailwind CSS class sorting and formatting.
@@ -44,6 +49,7 @@ const plugin: Deno.lint.Plugin = {
                   analysis.originalText,
                   attrName,
                 );
+                reportDuplicateClasses(context, value, analysis, attrName);
                 reportUnsortedClasses(context, value, analysis, attrName);
               }
             } else if (value.type === "JSXExpressionContainer") {
@@ -107,6 +113,14 @@ const plugin: Deno.lint.Plugin = {
                           true,
                           templateInfo,
                         );
+                        reportDuplicateClasses(
+                          context,
+                          element,
+                          analysis,
+                          attrName,
+                          true,
+                          templateInfo,
+                        );
                         reportUnsortedClasses(
                           context,
                           element,
@@ -139,6 +153,12 @@ const plugin: Deno.lint.Plugin = {
                     context,
                     arg,
                     analysis.originalText,
+                    `${functionName}() argument`,
+                  );
+                  reportDuplicateClasses(
+                    context,
+                    arg,
+                    analysis,
                     `${functionName}() argument`,
                   );
                   reportUnsortedClasses(
@@ -206,6 +226,14 @@ const plugin: Deno.lint.Plugin = {
                           true,
                           templateInfo,
                         );
+                        reportDuplicateClasses(
+                          context,
+                          element,
+                          analysis,
+                          `${functionName}() template`,
+                          true,
+                          templateInfo,
+                        );
                         reportUnsortedClasses(
                           context,
                           element,
@@ -228,6 +256,12 @@ const plugin: Deno.lint.Plugin = {
                         context,
                         prop.key,
                         analysis.originalText,
+                        `${functionName}() object key`,
+                      );
+                      reportDuplicateClasses(
+                        context,
+                        prop.key,
+                        analysis,
                         `${functionName}() object key`,
                       );
                       reportUnsortedClasses(
@@ -267,6 +301,45 @@ const plugin: Deno.lint.Plugin = {
                       value: element.value,
                     });
                   }
+                }
+
+                // Check for duplicate classes in array - report individually
+                const duplicateClasses = findDuplicateClasses(allClasses);
+                if (duplicateClasses.length > 0) {
+                  // Count occurrences for each duplicate class
+                  const classCount = new Map<string, number>();
+                  allClasses.forEach((cls) => {
+                    classCount.set(cls, (classCount.get(cls) || 0) + 1);
+                  });
+
+                  duplicateClasses.forEach((duplicateClass) => {
+                    const count = classCount.get(duplicateClass) || 0;
+                    const message = count > 2
+                      ? `Duplicate TailwindCSS class "${duplicateClass}" found in ${functionName}() array (appears ${count} times)`
+                      : `Duplicate TailwindCSS class "${duplicateClass}" found in ${functionName}() array`;
+
+                    context.report({
+                      node: arg,
+                      message,
+                      fix(fixer) {
+                        // Remove duplicates from array
+                        const seen = new Set<string>();
+                        const uniqueClasses = allClasses.filter((cls) => {
+                          if (seen.has(cls)) {
+                            return false;
+                          }
+                          seen.add(cls);
+                          return true;
+                        });
+                        const uniqueArrayContent = uniqueClasses.map((cls) =>
+                          `"${cls}"`
+                        ).join(",\n        ");
+                        const newArrayText =
+                          `[\n        ${uniqueArrayContent},\n      ]`;
+                        return fixer.replaceText(arg, newArrayText);
+                      },
+                    });
+                  });
                 }
 
                 if (allClasses.length > 1 && !isClassesSorted(allClasses)) {
@@ -356,6 +429,14 @@ const plugin: Deno.lint.Plugin = {
                       context,
                       element,
                       analysis.originalText,
+                      `${functionName}\`\` template`,
+                      true,
+                      templateInfo,
+                    );
+                    reportDuplicateClasses(
+                      context,
+                      element,
+                      analysis,
                       `${functionName}\`\` template`,
                       true,
                       templateInfo,

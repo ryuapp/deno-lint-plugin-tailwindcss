@@ -1,11 +1,10 @@
 export function runLintPlugin(
   plugin: Deno.lint.Plugin,
-  filename: string,
   content: string,
 ): Array<Deno.lint.Diagnostic> {
   return Deno.lint.runPlugin(
     plugin,
-    filename,
+    "nonexistent.tsx",
     content,
   );
 }
