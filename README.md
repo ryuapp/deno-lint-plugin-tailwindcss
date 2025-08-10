@@ -22,6 +22,34 @@ Add the plugin to your deno.json(c):
 }
 ```
 
+And just run `deno lint --fix`.
+
+## Supported sort targets
+
+### JSX/TSX attributes
+
+Supports `class` and `className` attributes. That means it supports React, Preact, SolidJS, Qwik, and more!
+
+```tsx
+function StarButton() {
+  return (
+    <button class="rounded-md bg-gray-200 px-4 py-2 font-semibold text-gray-700">
+      Star
+    </button>
+  );
+}
+```
+
+### Utility functions
+
+Supports `clsx()` in [clsx](https://github.com/lukeed/clsx), `cn()` used in [shadcn/ui](https://ui.shadcn.com/), and `tw` tagged templates.
+
+```tsx
+const class1 = clsx("flex items-center p-4 text-red-500");
+const class2 = cn("flex items-center p-4 text-red-500");
+const class3 = tw`flex items-center p-4 text-red-500`;
+```
+
 ## Philosophy
 
 Although this is a linter plugin, its role is primarily formatting, so it only provides minimal options, in keeping with [Prettier's option philosophy](https://prettier.io/docs/option-philosophy).
