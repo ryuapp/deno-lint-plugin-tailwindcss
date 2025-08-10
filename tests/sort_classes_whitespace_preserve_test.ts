@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "@std/assert";
 import { sortClassesRule } from "../src/rules/sort_classes.ts";
 import { runLintPlugin } from "./test-utils.ts";
 
