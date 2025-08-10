@@ -1,6 +1,7 @@
 import { sortClasses } from "./sort_classes.ts";
 import {
   type ClassAnalysisResult,
+  findDuplicatePositions,
   hasExtraWhitespace,
   isClassesSorted,
 } from "./utils.ts";
@@ -151,6 +152,85 @@ export function reportUnsortedClasses(
           return fixer.replaceText(node, `"${sortedText}"`);
         } else if (node.type === "TemplateElement") {
           return fixer.replaceText(node, sortedText);
+        }
+        return [];
+      },
+    });
+  }
+}
+
+/**
+ * Reports duplicate classes as separate errors.
+ * Each duplicate class gets its own diagnostic with targeted error message.
+ *
+ * @param context - The lint rule execution context
+ * @param node - The AST node containing the class string
+ * @param analysis - Result of analyzing the class string
+ * @param attributeName - Name of the attribute or context for error messages
+ * @param isTemplateQuasi - Whether this is part of a template literal
+ * @param templateInfo - Information about template literal positioning
+ */
+export function reportDuplicateClasses(
+  context: Deno.lint.RuleContext,
+  node: Deno.lint.Literal | Deno.lint.TemplateElement,
+  analysis: ClassAnalysisResult,
+  attributeName: string,
+  isTemplateQuasi = false,
+  templateInfo?: TemplateInfo,
+) {
+  const duplicateInfo = findDuplicatePositions(analysis.originalText);
+
+  if (duplicateInfo.length === 0) return;
+
+  // Remove duplicates while preserving first occurrence order
+  const seen = new Set<string>();
+  const uniqueClasses = analysis.classes.filter((cls) => {
+    if (seen.has(cls)) {
+      return false;
+    }
+    seen.add(cls);
+    return true;
+  });
+
+  let fixedText = uniqueClasses.join(" ");
+
+  // For template literals, preserve leading and trailing spaces
+  if (isTemplateQuasi && templateInfo) {
+    const originalHasLeadingSpace = analysis.originalText.startsWith(" ");
+    const originalHasTrailingSpace = analysis.originalText.endsWith(" ");
+
+    if (
+      templateInfo.hasPrevExpression && originalHasLeadingSpace &&
+      !fixedText.startsWith(" ")
+    ) {
+      fixedText = " " + fixedText;
+    }
+
+    if (
+      templateInfo.hasNextExpression && originalHasTrailingSpace &&
+      !fixedText.endsWith(" ")
+    ) {
+      fixedText += " ";
+    }
+  }
+
+  // Report each duplicate class individually
+  for (const duplicate of duplicateInfo) {
+    const { className, duplicateIndices } = duplicate;
+    const duplicateCount = duplicateIndices.length;
+
+    context.report({
+      node,
+      message:
+        `Duplicate TailwindCSS class "${className}" found in ${attributeName}${
+          duplicateCount > 1 ? ` (appears ${duplicateCount + 1} times)` : ""
+        }`,
+      hint: `Remove duplicate "${className}" class. Fixed text: "${fixedText}"`,
+      fix(fixer) {
+        if (node.type === "Literal") {
+          return fixer.replaceText(node, `"${fixedText}"`);
+        } else if (node.type === "TemplateElement") {
+          return fixer.replaceText(node, fixedText);
         }
         return [];
       },

@@ -212,3 +212,79 @@ export function extractClassesFromTemplateElement(
 
   return analyzeClassString(value);
 }
+
+/**
+ * Finds duplicate CSS classes in an array of class names.
+ * Returns an array of duplicate class names (each duplicate appears once).
+ *
+ * @param classes - Array of CSS class names to check for duplicates
+ * @returns Array of duplicate class names (unique list)
+ *
+ * @example
+ * ```ts
+ * findDuplicateClasses(["flex", "p-4", "flex", "items-center", "p-4"])
+ * // Returns: ["flex", "p-4"]
+ * ```
+ */
+export function findDuplicateClasses(classes: string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+
+  for (const cls of classes) {
+    if (seen.has(cls)) {
+      duplicates.add(cls);
+    } else {
+      seen.add(cls);
+    }
+  }
+
+  return Array.from(duplicates);
+}
+
+/**
+ * Information about a duplicate class occurrence.
+ */
+export interface DuplicateClassInfo {
+  /** The duplicate class name */
+  className: string;
+  /** Indices where this class appears (first occurrence is not considered duplicate) */
+  duplicateIndices: number[];
+  /** The original text positions of duplicate occurrences */
+  positions: Array<{ start: number; end: number }>;
+}
+
+/**
+ * Finds detailed information about duplicate classes including their positions.
+ * This is a simplified version that works with the current reporting system.
+ *
+ * @param originalText - The original class string
+ * @returns Array of duplicate class information
+ */
+export function findDuplicatePositions(
+  originalText: string,
+): DuplicateClassInfo[] {
+  const classes = extractClassesFromString(originalText);
+  const seen = new Map<string, number[]>();
+  const duplicateInfo: DuplicateClassInfo[] = [];
+
+  // Track all occurrences of each class
+  classes.forEach((cls, index) => {
+    if (!seen.has(cls)) {
+      seen.set(cls, []);
+    }
+    seen.get(cls)!.push(index);
+  });
+
+  // Find duplicates
+  for (const [className, indices] of seen) {
+    if (indices.length > 1) {
+      duplicateInfo.push({
+        className,
+        duplicateIndices: indices.slice(1), // Exclude first occurrence
+        positions: [], // Simplified - positions calculation is complex for string literals
+      });
+    }
+  }
+
+  return duplicateInfo;
+}
