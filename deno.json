@@ -17,7 +17,7 @@
   },
   "tasks": {
     "fix": "deno fmt && deno lint --fix",
-    "test": "deno test -R",
+    "test": "deno test -R --parallel",
     "test:coverage": "deno test -R --coverage"
   },
   "lint": {
