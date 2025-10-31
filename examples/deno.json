@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "clsx": "npm:clsx@2.1.1"
+  }
+}

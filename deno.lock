@@ -4,7 +4,7 @@
     "jsr:@std/assert@1": "1.0.13",
     "jsr:@std/internal@^1.0.6": "1.0.10",
     "npm:@types/react@19": "19.1.8",
-    "npm:clsx@^2.1.1": "2.1.1"
+    "npm:clsx@2.1.1": "2.1.1"
   },
   "jsr": {
     "@std/assert@1.0.13": {
@@ -34,6 +34,13 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@1"
-    ]
+    ],
+    "members": {
+      "examples": {
+        "dependencies": [
+          "npm:clsx@2.1.1"
+        ]
+      }
+    }
   }
 }

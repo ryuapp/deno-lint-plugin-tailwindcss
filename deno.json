@@ -26,5 +26,6 @@
   },
   "fmt": {
     "proseWrap": "preserve"
-  }
+  },
+  "workspace": ["examples"]
 }

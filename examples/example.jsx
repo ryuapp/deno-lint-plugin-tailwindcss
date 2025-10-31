@@ -1,6 +1,6 @@
 /** @jsxImportSource npm:react@^19.0.0 */
 /** @jsxImportSourceTypes npm:@types/react@^19.0.0 */
-import clsx from "npm:clsx@^2.1.1";
+import clsx from "clsx";
 
 export function Component() {
   return (
