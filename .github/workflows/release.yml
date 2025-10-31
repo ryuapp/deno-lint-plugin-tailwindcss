@@ -13,10 +13,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
+        with:
+          cache: true
 
       - name: Publish JSR package
         run: deno publish

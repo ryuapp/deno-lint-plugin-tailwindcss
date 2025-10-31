@@ -13,10 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
+        with:
+          cache: true
 
       - name: Format Check
         run: deno fmt --check
