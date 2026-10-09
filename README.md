@@ -1,3 +1,6 @@
+> [!NOTE]
+> As [Deno is joining Cloudflare](https://deno.com/blog/cloudflare) and development of the Deno runtime is coming to an end, I'm archiving this project as well.
+
 # @ryu/deno-lint-plugin-tailwindcss
 
 [![CI](https://github.com/ryuapp/deno-lint-plugin-tailwindcss/workflows/CI/badge.svg)](https://github.com/ryuapp/deno-lint-plugin-tailwindcss/actions?query=workflow%3ACI)
